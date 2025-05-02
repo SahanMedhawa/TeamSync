@@ -32,6 +32,8 @@ import axios from "axios";
 import Chat from '../components/Chat';
 import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiCalendar, FiUser, FiAlertCircle } from "react-icons/fi";
 import teamsImage from "../assets/teams.png";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Requests = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -268,6 +270,75 @@ const Requests = () => {
     onAcceptedChatOpen();
   };
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const title = "Completed Requests Report";
+  
+    // Add the TeamSync logo at the beginning of the PDF
+    const logoUrl = '/TeamSynclogo.png'; // Absolute path to the logo in the public folder
+    const imgWidth = 50; // Width of the logo
+    const imgHeight = 50; // Height of the logo
+    const pageWidth = doc.internal.pageSize.width; // Get the page width
+  
+    // Fetch the image as a Base64 string
+    fetch(logoUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const base64Image = reader.result.split(',')[1]; // Extract the Base64 string
+          doc.addImage(
+            base64Image,
+            'PNG',
+            (pageWidth - imgWidth) / 2, // Center horizontally
+            10, // Position 10 units from the top
+            imgWidth,
+            imgHeight
+          );
+  
+          // Add the title below the logo
+          doc.text(title, 20, imgHeight + 20);
+  
+          // Add the table
+          autoTable(doc, {
+            startY: imgHeight + 30, // Start the table below the logo and title
+            head: [["Task Name", "Description", "Priority", "Completed On", "Assignee"]],
+            body: filteredCompletedRequests.map((request) => [
+              request.taskName,
+              request.description,
+              request.priority,
+              new Date(request.completedAt).toLocaleDateString(),
+              getAssigneeName(request.assignee),
+            ]),
+          });
+  
+          // Save the PDF
+          doc.save(`${title}.pdf`);
+        };
+        reader.readAsDataURL(blob); // Convert the blob to a Base64 string
+      })
+      .catch(error => {
+        console.error('Failed to load the logo image:', error);
+  
+        // Add the title and table even if the logo fails to load
+        doc.text(title, 20, 20);
+        autoTable(doc, {
+          startY: 30,
+          head: [["Task Name", "Description", "Priority", "Completed On", "Assignee"]],
+          body: filteredCompletedRequests.map((request) => [
+            request.taskName,
+            request.description,
+            request.priority,
+            new Date(request.completedAt).toLocaleDateString(),
+            getAssigneeName(request.assignee),
+          ]),
+        });
+  
+        // Save the PDF
+        doc.save(`${title}.pdf`);
+      });
+  };
+
   return (
     <Box 
       minH="100vh" 
@@ -354,7 +425,14 @@ const Requests = () => {
           >
             Create Request
           </Button>
+
         </Box>
+
+                <Flex justify="space-between" align="center" mb="8">
+                    <Button colorScheme="blue" onClick={handleExportPDF}>
+                      Export PDF
+                    </Button> 
+                </Flex>
 
         <Flex gap={6} mt={4}>
           {/* Left Side - Pending Requests Section */}
