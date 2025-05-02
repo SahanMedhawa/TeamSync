@@ -181,15 +181,9 @@ const DashboardHome = () => {
               </Text>
             </Box>
           </HStack>
-<<<<<<< HEAD
-
-          {/* NotificationBell aligned to the top-right */}
-          <NotificationBell companyID={companyID} />
-=======
           <HStack spacing="4">
           <NotificationBell companyID={companyID} />
           </HStack>
->>>>>>> origin/main
         </Flex>
 
         <Grid templateColumns="repeat(3, 1fr)" gap={6} mb="8">
@@ -420,11 +414,7 @@ const AdminSidebar = () => {
         <Heading size="lg" fontSize="2xl" bgGradient="linear(to-r, blue.400, blue.600)" bgClip="text">
           TeamSync Admin
         </Heading>
-<<<<<<< HEAD
-
-=======
        
->>>>>>> origin/main
       </Flex>
 
       <VStack align="stretch" spacing="2">
