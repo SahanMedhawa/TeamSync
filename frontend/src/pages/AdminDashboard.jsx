@@ -181,6 +181,9 @@ const DashboardHome = () => {
               </Text>
             </Box>
           </HStack>
+          <HStack spacing="4">
+          <NotificationBell companyID={companyID} />
+          </HStack>
         </Flex>
 
         <Grid templateColumns="repeat(3, 1fr)" gap={6} mb="8">
@@ -358,7 +361,7 @@ const DashboardHome = () => {
               />
               <HStack spacing="4" mb="4" position="relative">
                 <Icon as={FiBell} boxSize="6" color="purple.500" />
-                <Heading size="md" color={textColor}>Notifications</Heading>
+                <Heading size="md" color={textColor}>Evaluation Reminders</Heading>
               </HStack>
               <VStack align="stretch" spacing="4">
                 {notifications.map((notification, index) => (
@@ -411,9 +414,7 @@ const AdminSidebar = () => {
         <Heading size="lg" fontSize="2xl" bgGradient="linear(to-r, blue.400, blue.600)" bgClip="text">
           TeamSync Admin
         </Heading>
-        <Box ml="auto">
-          <NotificationBell companyID={companyID} iconSize={24} buttonSize="md" adminOnlyFeedback={true} />
-        </Box>
+       
       </Flex>
 
       <VStack align="stretch" spacing="2">
