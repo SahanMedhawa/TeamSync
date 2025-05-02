@@ -208,49 +208,129 @@ const Evaluation = () => {
     onHistoryOpen();
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const doc = new jsPDF();
     const title = `Employee Evaluations - ${filterDate.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
-    doc.text(title, 20, 10);
-    autoTable(doc, {
-      head: [['Employee', 'Role', 'Acceptance Rate', 'Completed Rate', 'Ontime Rate', 'Grade']],
-      body: sortedEmployees.map(employee => {
-        const evaluation = evaluations.find(e => 
-          e.employee === employee.fullName && 
-          e.month === filterDate.toLocaleString('default', { month: 'long', year: 'numeric' })
-        );
-        
-        const requests = employee.requests.filter(request => {
-          const requestDate = new Date(request.createdAt);
-          return (
-            requestDate.getMonth() === filterDate.getMonth() &&
-            requestDate.getFullYear() === filterDate.getFullYear()
+  
+    // Add the TeamSync logo at the beginning of the PDF
+    const logoUrl = '/TeamSynclogo.png'; // Absolute path to the logo in the public folder
+    const imgWidth = 50; // Width of the logo
+    const imgHeight = 50; // Height of the logo
+    const pageWidth = doc.internal.pageSize.width; // Get the page width
+  
+    // Fetch the image as a Base64 string
+    fetch(logoUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const base64Image = reader.result.split(',')[1]; // Extract the Base64 string
+          doc.addImage(
+            base64Image,
+            'PNG',
+            (pageWidth - imgWidth) / 2, // Center horizontally
+            10, // Position 10 units from the top
+            imgWidth,
+            imgHeight
           );
+  
+          // Add the title below the logo
+          doc.text(title, 20, imgHeight + 20);
+  
+          // Add the table
+          autoTable(doc, {
+            startY: imgHeight + 30, // Start the table below the logo and title
+            head: [['Employee', 'Role', 'Acceptance Rate', 'Completed Rate', 'Ontime Rate', 'Grade']],
+            body: sortedEmployees.map(employee => {
+              const evaluation = evaluations.find(e => 
+                e.employee === employee.fullName && 
+                e.month === filterDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+              );
+              
+              const requests = employee.requests.filter(request => {
+                const requestDate = new Date(request.createdAt);
+                return (
+                  requestDate.getMonth() === filterDate.getMonth() &&
+                  requestDate.getFullYear() === filterDate.getFullYear()
+                );
+              });
+              
+              const totalRequests = requests.length;
+              const accepted = requests.filter(r => r.status === 'ongoing').length;
+              const declined = requests.filter(r => r.status === 'declined').length;
+              const completed = requests.filter(r => r.status === 'completed').length;
+              
+              const acceptanceRate = (accepted + declined) > 0 ? 
+                (accepted / (accepted + declined + completed)) * 100 : 0;
+              const completedRate = totalRequests > 0 ? 
+                (completed / totalRequests) * 100 : 0;
+              const ontimeRate = completed > 0 ? 
+                (requests.filter(r => r.status === 'completed' && new Date(r.completedOn) <= new Date(r.deadline)).length / completed) * 100 : 0;
+              
+              return [
+                employee.fullName,
+                employee.role,
+                `${acceptanceRate.toFixed(0)}%`,
+                `${completedRate.toFixed(0)}%`,
+                `${ontimeRate.toFixed(0)}%`,
+                evaluation ? evaluation.grade : 'N/A',
+              ];
+            }),
+          });
+  
+          // Save the PDF
+          doc.save(`${title}.pdf`);
+        };
+        reader.readAsDataURL(blob); // Convert the blob to a Base64 string
+      })
+      .catch(error => {
+        console.error('Failed to load the logo image:', error);
+  
+        // Add the title and table even if the logo fails to load
+        doc.text(title, 20, 20);
+        autoTable(doc, {
+          startY: 30,
+          head: [['Employee', 'Role', 'Acceptance Rate', 'Completed Rate', 'Ontime Rate', 'Grade']],
+          body: sortedEmployees.map(employee => {
+            const evaluation = evaluations.find(e => 
+              e.employee === employee.fullName && 
+              e.month === filterDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+            );
+            
+            const requests = employee.requests.filter(request => {
+              const requestDate = new Date(request.createdAt);
+              return (
+                requestDate.getMonth() === filterDate.getMonth() &&
+                requestDate.getFullYear() === filterDate.getFullYear()
+              );
+            });
+            
+            const totalRequests = requests.length;
+            const accepted = requests.filter(r => r.status === 'ongoing').length;
+            const declined = requests.filter(r => r.status === 'declined').length;
+            const completed = requests.filter(r => r.status === 'completed').length;
+            
+            const acceptanceRate = (accepted + declined) > 0 ? 
+              (accepted / (accepted + declined + completed)) * 100 : 0;
+            const completedRate = totalRequests > 0 ? 
+              (completed / totalRequests) * 100 : 0;
+            const ontimeRate = completed > 0 ? 
+              (requests.filter(r => r.status === 'completed' && new Date(r.completedOn) <= new Date(r.deadline)).length / completed) * 100 : 0;
+            
+            return [
+              employee.fullName,
+              employee.role,
+              `${acceptanceRate.toFixed(0)}%`,
+              `${completedRate.toFixed(0)}%`,
+              `${ontimeRate.toFixed(0)}%`,
+              evaluation ? evaluation.grade : 'N/A',
+            ];
+          }),
         });
-        
-        const totalRequests = requests.length;
-        const accepted = requests.filter(r => r.status === 'ongoing').length;
-        const declined = requests.filter(r => r.status === 'declined').length;
-        const completed = requests.filter(r => r.status === 'completed').length;
-        
-        const acceptanceRate = (accepted + declined) > 0 ? 
-          (accepted / (accepted + declined + completed)) * 100 : 0;
-        const completedRate = totalRequests > 0 ? 
-          (completed / totalRequests) * 100 : 0;
-        const ontimeRate = completed > 0 ? 
-          (requests.filter(r => r.status === 'completed' && new Date(r.completedOn) <= new Date(r.deadline)).length / completed) * 100 : 0;
-        
-        return [
-          employee.fullName,
-          employee.role,
-          `${acceptanceRate.toFixed(0)}%`,
-          `${completedRate.toFixed(0)}%`,
-          `${ontimeRate.toFixed(0)}%`,
-          evaluation ? evaluation.grade : 'N/A',
-        ];
-      }),
-    });
-    doc.save(`${title}.pdf`);
+  
+        // Save the PDF
+        doc.save(`${title}.pdf`);
+      });
   };
 
   const filteredEmployees = employees.filter(employee =>

@@ -214,21 +214,72 @@ const Feedback = () => {
 
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    const title = 'Feedback Report';
-    doc.text(title, 20, 10);
-    autoTable(doc, {
-      head: [['Title', 'Description', 'Category', 'User', 'Status']],
-      body: feedbacks.map(feedback => [
-        feedback.title,
-        feedback.description,
-        feedback.category,
-        feedback.user,
-        feedback.status
-      ]),
-    });
-    doc.save(`${title}.pdf`);
+    const title = "Feedback Report";
+  
+    // Add the TeamSync logo at the beginning of the PDF
+    const logoUrl = '/TeamSynclogo.png'; // Absolute path to the logo in the public folder
+    const imgWidth = 50; // Width of the logo
+    const imgHeight = 50; // Height of the logo
+    const pageWidth = doc.internal.pageSize.width; // Get the page width
+  
+    // Fetch the image as a Base64 string
+    fetch(logoUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const base64Image = reader.result.split(',')[1]; // Extract the Base64 string
+          doc.addImage(
+            base64Image,
+            'PNG',
+            (pageWidth - imgWidth) / 2, // Center horizontally
+            10, // Position 10 units from the top
+            imgWidth,
+            imgHeight
+          );
+  
+          // Add the title below the logo
+          doc.text(title, 20, imgHeight + 20);
+  
+          // Add the table
+          autoTable(doc, {
+            startY: imgHeight + 30, // Start the table below the logo and title
+            head: [["Title", "Description", "Category", "User", "Status"]],
+            body: filteredResolvedFeedbacks.map((feedback) => [
+              feedback.title,
+              feedback.description,
+              feedback.category,
+              getUserName(feedback.employee),
+              feedback.status,
+            ]),
+          });
+  
+          // Save the PDF
+          doc.save(`${title}.pdf`);
+        };
+        reader.readAsDataURL(blob); // Convert the blob to a Base64 string
+      })
+      .catch(error => {
+        console.error('Failed to load the logo image:', error);
+  
+        // Add the title and table even if the logo fails to load
+        doc.text(title, 20, 20);
+        autoTable(doc, {
+          startY: 30,
+          head: [["Title", "Description", "Category", "User", "Status"]],
+          body: filteredResolvedFeedbacks.map((feedback) => [
+            feedback.title,
+            feedback.description,
+            feedback.category,
+            getUserName(feedback.employee),
+            feedback.status,
+          ]),
+        });
+  
+        // Save the PDF
+        doc.save(`${title}.pdf`);
+      });
   };
-
   const filteredResolvedFeedbacks = feedbacks.filter(feedback =>
     feedback.status === 'completed' && feedback.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
