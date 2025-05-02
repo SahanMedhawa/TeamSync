@@ -20,10 +20,17 @@ import {
   useToast,
   Text,
   Flex,
+  useColorModeValue,
+  Image,
+  InputGroup,
+  InputLeftElement,
+  Icon,
 } from '@chakra-ui/react';
+import { FiSearch } from 'react-icons/fi';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import teamsImage from "../assets/teams.png";
 
 const Feedback = () => {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -44,6 +51,12 @@ const Feedback = () => {
   const role = localStorage.getItem('role');
   const companyID = localStorage.getItem('companyID');
   const fullName = localStorage.getItem('fullName');
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "white");
+  const headingColor = useColorModeValue("blue.600", "blue.300");
+  const inputBg = useColorModeValue("gray.50", "gray.600");
 
   useEffect(() => {
     setNewFeedback((prevFeedback) => ({ ...prevFeedback, employee: companyID, user: fullName }));
@@ -221,136 +234,199 @@ const Feedback = () => {
   );
 
   return (
-    <Box p="8">
-      <Flex justify="space-between" align="center" mb="8">
-        <Heading>Feedback</Heading>
-        {role !== 'HR' && (
-          <Button colorScheme="blue" onClick={onOpen}>
-            Contact HR
-          </Button>
-        )}
-        {role === 'HR' && (
-          <Button colorScheme="blue" onClick={handleExportPDF}>
-            Export PDF
-          </Button>
-        )}
-      </Flex>
-      <Flex>
-        <Box flex="1" mr="8" bg="gray.200" p="6" borderRadius="md" boxShadow="md" minH="80vh">
-          <Heading size="md" mb="4">Currently Processing</Heading>
-          <VStack spacing="4" mb="8">
-            {feedbacks.filter(feedback => feedback.status === 'processing').map(feedback => (
-              <Box key={feedback._id} p="4" boxShadow="md" borderRadius="md" bg="white" w="100%" border="1px" borderColor="gray.200">
-                <Heading size="sm">{feedback.title}</Heading>
-                <Text>{feedback.description}</Text>
-                <Text>Category: {feedback.category}</Text>
-                <Text>User: {getUserName(feedback.employee)}</Text>
-                <Flex mt="2">
-                  <Button size="sm" colorScheme="red" onClick={() => handleDelete(feedback._id)}>Delete</Button>
-                  {role !== 'HR' && (
-                    <Button size="sm" ml="2" colorScheme="gray" onClick={() => { setEditFeedback(feedback); onEditOpen(); }}>Edit</Button>
-                  )}
-                  {role === 'HR' && (
-                    <Button size="sm" ml="2" colorScheme="green" onClick={() => handleMarkCompleted(feedback._id)}>Mark as Completed</Button>
-                  )}
-                </Flex>
-              </Box>
-            ))}
-          </VStack>
-        </Box>
-        <Box flex="1" bg="gray.200" p="6" borderRadius="md" boxShadow="md">
-          <Heading size="md" mb="4">Resolved Issues</Heading>
-          <Input
-            placeholder="Search resolved feedback"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            mb="4"
-            outline={"1px solid"}
-          />
-          <VStack spacing="4">
-            {filteredResolvedFeedbacks.map(feedback => (
-              <Box key={feedback._id} p="4" boxShadow="md" borderRadius="md" bg="white" w="100%" border="1px" borderColor="gray.200">
-                <Heading size="sm">{feedback.title}</Heading>
-                <Text>{feedback.description}</Text>
-                <Text>Category: {feedback.category}</Text>
-                <Text>User: {getUserName(feedback.employee)}</Text>
-              </Box>
-            ))}
-          </VStack>
-        </Box>
-      </Flex>
+    <Box 
+      minH="100vh" 
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={teamsImage}
+          alt="Feedback Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
+        />
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
+      </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Submit Feedback</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing="4" as="form" onSubmit={handleSubmit}>
-              <FormControl isRequired>
-                <FormLabel>Title</FormLabel>
-                <Input name="title" value={newFeedback.title} onChange={handleChange} />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>Description</FormLabel>
-                <Textarea name="description" value={newFeedback.description} onChange={handleChange} />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>Category</FormLabel>
-                <Select name="category" value={newFeedback.category} onChange={handleChange}>
-                  <option value="system issue">System Issue</option>
-                  <option value="system misuse">System Misuse</option>
-                  <option value="general">General</option>
-                  <option value="other">Other</option>
-                </Select>
-              </FormControl>
-              <Input type="hidden" name="employee" value={newFeedback.employee} readOnly />
-              <Input type="hidden" name="user" value={newFeedback.user} readOnly />
-              <Button colorScheme="blue" type="submit" width="full">
-                Submit
-              </Button>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Content Container */}
+      <Box p="8" position="relative" zIndex="1">
+        <Flex justify="space-between" align="center" mb="8">
+          <Heading color={headingColor}>Feedback</Heading>
+          {role !== 'HR' && (
+            <Button colorScheme="blue" onClick={onOpen}>
+              Contact HR
+            </Button>
+          )}
+          {role === 'HR' && (
+            <Button colorScheme="blue" onClick={handleExportPDF}>
+              Export PDF
+            </Button>
+          )}
+        </Flex>
 
-      <Modal isOpen={isEditOpen} onClose={onEditClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Edit Feedback</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing="4" as="form" onSubmit={handleEditSubmit}>
-              <FormControl isRequired>
-                <FormLabel>Title</FormLabel>
-                <Input name="title" value={editFeedback?.title || ''} onChange={handleEditChange} />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>Description</FormLabel>
-                <Textarea name="description" value={editFeedback?.description || ''} onChange={handleEditChange} />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>Category</FormLabel>
-                <Select name="category" value={editFeedback?.category || ''} onChange={handleEditChange}>
-                  <option value="System Issue">System Issue</option>
-                  <option value="System Misuse">System Misuse</option>
-                  <option value="General">General</option>
-                  <option value="Other">Other</option>
-                </Select>
-              </FormControl>
-              <Button colorScheme="blue" type="submit" width="full">
-                Save Changes
-              </Button>
+        <Flex>
+          <Box flex="1" mr="8" bg={cardBg} p="6" borderRadius="xl" boxShadow="md" minH="80vh" border="1px" borderColor={borderColor}>
+            <Heading size="md" mb="4" color={headingColor}>Currently Processing</Heading>
+            <VStack spacing="4" mb="8">
+              {feedbacks.filter(feedback => feedback.status === 'processing').map(feedback => (
+                <Box 
+                  key={feedback._id} 
+                  p="4" 
+                  boxShadow="md" 
+                  borderRadius="md" 
+                  bg={useColorModeValue("white", "gray.600")} 
+                  w="100%" 
+                  border="1px" 
+                  borderColor={borderColor}
+                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                  transition="all 0.2s"
+                >
+                  <Heading size="sm" color={textColor}>{feedback.title}</Heading>
+                  <Text color={textColor}>{feedback.description}</Text>
+                  <Text color={textColor}>Category: {feedback.category}</Text>
+                  <Text color={textColor}>User: {getUserName(feedback.employee)}</Text>
+                  <Flex mt="2">
+                    <Button size="sm" colorScheme="red" onClick={() => handleDelete(feedback._id)}>Delete</Button>
+                    {role !== 'HR' && (
+                      <Button size="sm" ml="2" colorScheme="green" onClick={() => { setEditFeedback(feedback); onEditOpen(); }}>Edit</Button>
+                    )}
+                    {role === 'HR' && (
+                      <Button size="sm" ml="2" colorScheme="green" onClick={() => handleMarkCompleted(feedback._id)}>Mark as Completed</Button>
+                    )}
+                  </Flex>
+                </Box>
+              ))}
             </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" onClick={onEditClose}>Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </Box>
+
+          <Box flex="1" bg={cardBg} p="6" borderRadius="xl" boxShadow="md" minH="80vh" border="1px" borderColor={borderColor}>
+            <Heading size="md" mb="4" color={headingColor}>Resolved Issues</Heading>
+            <InputGroup mb="4">
+              <InputLeftElement pointerEvents="none">
+                <Icon as={FiSearch} color="gray.400" />
+              </InputLeftElement>
+              <Input
+                placeholder="Search resolved feedback"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                bg={inputBg}
+                _hover={{ borderColor: "blue.400" }}
+                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+              />
+            </InputGroup>
+            <VStack spacing="4">
+              {filteredResolvedFeedbacks.map(feedback => (
+                <Box 
+                  key={feedback._id} 
+                  p="4" 
+                  boxShadow="md" 
+                  borderRadius="md" 
+                  bg={useColorModeValue("white", "gray.600")} 
+                  w="100%" 
+                  border="1px" 
+                  borderColor={borderColor}
+                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                  transition="all 0.2s"
+                >
+                  <Heading size="sm" color={textColor}>{feedback.title}</Heading>
+                  <Text color={textColor}>{feedback.description}</Text>
+                  <Text color={textColor}>Category: {feedback.category}</Text>
+                  <Text color={textColor}>User: {getUserName(feedback.employee)}</Text>
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+        </Flex>
+
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Submit Feedback</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <VStack spacing="4" as="form" onSubmit={handleSubmit}>
+                <FormControl isRequired>
+                  <FormLabel>Title</FormLabel>
+                  <Input name="title" value={newFeedback.title} onChange={handleChange} />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel>Description</FormLabel>
+                  <Textarea name="description" value={newFeedback.description} onChange={handleChange} />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel>Category</FormLabel>
+                  <Select name="category" value={newFeedback.category} onChange={handleChange}>
+                    <option value="system issue">System Issue</option>
+                    <option value="system misuse">System Misuse</option>
+                    <option value="general">General</option>
+                    <option value="other">Other</option>
+                  </Select>
+                </FormControl>
+                <Input type="hidden" name="employee" value={newFeedback.employee} readOnly />
+                <Input type="hidden" name="user" value={newFeedback.user} readOnly />
+                <Button colorScheme="blue" type="submit" width="full">
+                  Submit
+                </Button>
+              </VStack>
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        <Modal isOpen={isEditOpen} onClose={onEditClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Edit Feedback</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <VStack spacing="4" as="form" onSubmit={handleEditSubmit}>
+                <FormControl isRequired>
+                  <FormLabel>Title</FormLabel>
+                  <Input name="title" value={editFeedback?.title || ''} onChange={handleEditChange} />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel>Description</FormLabel>
+                  <Textarea name="description" value={editFeedback?.description || ''} onChange={handleEditChange} />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel>Category</FormLabel>
+                  <Select name="category" value={editFeedback?.category || ''} onChange={handleEditChange}>
+                    <option value="System Issue">System Issue</option>
+                    <option value="System Misuse">System Misuse</option>
+                    <option value="General">General</option>
+                    <option value="Other">Other</option>
+                  </Select>
+                </FormControl>
+                <Button colorScheme="blue" type="submit" width="full">
+                  Save Changes
+                </Button>
+              </VStack>
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="ghost" onClick={onEditClose}>Cancel</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </Box>
     </Box>
   );
 };

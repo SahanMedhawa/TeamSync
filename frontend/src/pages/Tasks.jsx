@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 //sahan changes (i added some elements from chakra)
 import { Box, Heading, Text, VStack, Flex, Input, Select,Button, useToast, useDisclosure,Modal, ModalOverlay, ModalContent, ModalHeader,
-          ModalCloseButton, ModalBody, ModalFooter,FormControl, FormLabel, Textarea, Progress, HStack} from "@chakra-ui/react";
+          ModalCloseButton, ModalBody, ModalFooter,FormControl, FormLabel, Textarea, Progress, HStack, useColorModeValue, Image } from "@chakra-ui/react";
 import Chat from '../components/Chat';
 import TaskTimelineModal from '../components/TaskTimelineModal';
+import teamsImage from "../assets/teams.png";
 
 
 const MyTasks = () => {
@@ -39,6 +40,11 @@ const MyTasks = () => {
 
   // Retrieve companyID from localStorage
   const companyID = localStorage.getItem("companyID");
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "white");
+  const headingColor = useColorModeValue("blue.600", "blue.300");
 
   useEffect(() => {
     // Fetch requests assigned to the current user
@@ -332,216 +338,271 @@ const MyTasks = () => {
   };
 
   return (
-    <Box p="8">
-      <Heading mb="8">Your Journal</Heading>
-      <Flex>
-        <Box flex="1" mr="8" bg="gray.200" p="6" borderRadius="md" boxShadow="md" minH="80vh">
-          <Heading size="md" mb="4">To-do</Heading>
-          <Flex mb="4" justify="space-between">
-            {/* Search bar */}
-            <Input
-              placeholder="Search by request name"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              width="60%"
-              outline={"1px solid"}
-            />
-            <Select value={sortOption} onChange={handleSortChange} width="35%" outline={"1px solid"}>
-              <option value="priority">Sort by Priority</option>
-              <option value="deadline">Sort by Deadline</option>
-            </Select>
-          </Flex>
-          <VStack spacing="4">  {/* Vertically Align the stack */}
-            {filteredTodoRequests.map(request => (
-              <Box 
-                key={request._id} 
-                p="4" 
-                boxShadow="md" 
-                borderRadius="md" 
-                bg="white" 
-                w="100%" 
-                border="1px" 
-                borderColor="gray.200"
-                cursor="pointer"
-                onClick={() => {
-                  setSelectedTaskForTimeline(request);
-                  onTimelineOpen();
-                }}
-                _hover={{ bg: 'gray.50' }}
-              >
-                <Flex justify="space-between">
-                  <Box>
-                    <Heading size="sm">{request.taskName}</Heading>
-                    <Text>{request.description}</Text>
-                    <Text>Priority: {request.priority}</Text>
-                    <Text>Deadline: {new Date(request.deadline).toLocaleDateString()}</Text>
-                    <Box mt={2}>
-                      <Text fontSize="sm">Progress: {request.progress || 0}%</Text>
-                      <Progress value={request.progress || 0} colorScheme="blue" size="sm" />
-                    </Box>
-                  </Box>
-                  {/*
-                    Use HStack to prevent button overlay and provide spacing between action buttons.
-                    This ensures a clean, non-overlapping layout for task actions.
-                  */}
-                  <HStack spacing={2} align="start">
-                    <Button size="sm" colorScheme="blue" onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTask(request);
-                      setProgressUpdate({ progress: request.progress || 0, comment: '' });
-                      onProgressOpen();
-                    }}>Update Progress</Button>
-                    <Button size="sm" colorScheme="purple" onClick={(e) => {
-                      e.stopPropagation();
-                      handleChatClick(request);
-                    }}>Chat</Button>
-                    <Button size="sm" colorScheme="green" onClick={(e) => {
-                      e.stopPropagation();
-                      handleMarkAsDone(request._id);
-                    }}>Done</Button>
-                  </HStack>
-                </Flex>
-              </Box>
-            ))}
-          </VStack>
-        </Box>
-        <Box flex="1" bg="gray.200" p="6" borderRadius="md" boxShadow="md" minH="80vh">
-          <Heading size="md" mb="4">Incoming Requests</Heading>
-          <Flex mb="4" justify="space-between">
-            {/* select sort option */}
-            <Select value={incomingSortOption} onChange={handleIncomingSortChange} width="35%" outline={"1px solid"}>
-              <option value="priority">Sort by Priority</option>
-              <option value="deadline">Sort by Deadline</option>
-            </Select>
-          </Flex>
-          <VStack spacing="4">
-            {sortedIncomingRequests.map(request => (
-              <Box key={request._id} p="4" boxShadow="md" borderRadius="md" bg="white" w="100%" border="1px" borderColor="gray.200">
-                <Flex justify="space-between">
-                  <Box>
-                    <Heading size="sm">{request.taskName}</Heading>
-                    <Text>{request.description}</Text>
-                    <Text>Priority: {request.priority}</Text>
-                    <Text>Deadline: {new Date(request.deadline).toLocaleDateString()}</Text>
-                    <Text>Requester: {getRequesterName(request.assignedBy)}</Text>
-                  </Box>
-                  <Box>
-                    <Button size="sm" colorScheme="green" onClick={() => handleAcceptRequest(request._id)}>Accept</Button>
-                    <Button size="sm" ml="2" colorScheme="red" onClick={() => handleDeclineRequest(request._id)}>Decline</Button>
-                  </Box>
-                </Flex>
-              </Box>
-            ))}
-          </VStack>
-        </Box>
-      </Flex>
+    <Box 
+      minH="100vh" 
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={teamsImage}
+          alt="Tasks Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
+        />
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
+      </Box>
 
-      {/* Add TaskTimelineModal */}
-      <TaskTimelineModal 
-        isOpen={isTimelineOpen}
-        onClose={onTimelineClose}
-        task={selectedTaskForTimeline}
-        users={users}
-      />
-
-      {/* Modal for Declining a Request (Sahan Changes) */}
-             
-      <Modal isOpen={isOpen} onClose={() => {
-      onClose();
-      setReason("");
-      setAltDate(""); }}>
-
-      <ModalOverlay/>
-      <ModalContent>
-        <ModalHeader>Decline Request</ModalHeader>
-        <ModalCloseButton/>
-        <ModalBody>
-          <FormControl isRequired>
-            <FormLabel>Reason</FormLabel>
-            <Textarea
-              value={reason}
-              onChange={e => setReason(e.target.value)}
-            />
-          </FormControl>
-          <FormControl mt={4} isRequired>
-            <FormLabel>Alternative Date</FormLabel>
-            <Input
-              type="date"
-              min={new Date().toISOString().split('T')[0]}
-              value={altDate}
-              onChange={e => setAltDate(e.target.value)}
-            />
-          </FormControl>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" onClick={() => { onClose(); setReason(""); setAltDate("");}}>
-            Cancel
-          </Button>
-          <Button colorScheme="red" ml={3} onClick={handleDeclineSubmit}>
-            Decline
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-
-    {/* Progress Update Modal */}
-    <Modal isOpen={isProgressOpen} onClose={onProgressClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Update Progress</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack spacing={4}>
-            <FormControl isRequired>
-              <FormLabel>Progress (%)</FormLabel>
+      {/* Content Container */}
+      <Box p="8" position="relative" zIndex="1">
+        <Heading mb="8" color={headingColor}>Your Journal</Heading>
+        <Flex>
+          <Box flex="1" mr="8" bg={cardBg} p="6" borderRadius="md" boxShadow="md" minH="80vh" border="1px" borderColor={borderColor}>
+            <Heading size="md" mb="4" color={headingColor}>To-do</Heading>
+            <Flex mb="4" justify="space-between">
               <Input
-                type="number"
-                min="0"
-                max="100"
-                value={progressUpdate.progress}
-                onChange={(e) => setProgressUpdate(prev => ({ ...prev, progress: parseInt(e.target.value) }))}
-                required
+                placeholder="Search by request name"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                width="60%"
+                outline={"1px solid"}
+                bg={useColorModeValue("white", "gray.600")}
+                _hover={{ borderColor: "blue.400" }}
+                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Comment</FormLabel>
+              <Select 
+                value={sortOption} 
+                onChange={handleSortChange} 
+                width="35%" 
+                outline={"1px solid"}
+                bg={useColorModeValue("white", "gray.600")}
+                _hover={{ borderColor: "blue.400" }}
+                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+              >
+                <option value="priority">Sort by Priority</option>
+                <option value="deadline">Sort by Deadline</option>
+              </Select>
+            </Flex>
+            <VStack spacing="4">
+              {filteredTodoRequests.map(request => (
+                <Box 
+                  key={request._id} 
+                  p="4" 
+                  boxShadow="md" 
+                  borderRadius="md" 
+                  bg={useColorModeValue("white", "gray.600")} 
+                  w="100%" 
+                  border="1px" 
+                  borderColor={borderColor}
+                  cursor="pointer"
+                  onClick={() => {
+                    setSelectedTaskForTimeline(request);
+                    onTimelineOpen();
+                  }}
+                  _hover={{ bg: useColorModeValue("gray.50", "gray.500") }}
+                >
+                  <Flex justify="space-between">
+                    <Box>
+                      <Heading size="sm" color={textColor}>{request.taskName}</Heading>
+                      <Text color={textColor}>{request.description}</Text>
+                      <Text color={textColor}>Priority: {request.priority}</Text>
+                      <Text color={textColor}>Deadline: {new Date(request.deadline).toLocaleDateString()}</Text>
+                      <Box mt={2}>
+                        <Text fontSize="sm" color={textColor}>Progress: {request.progress || 0}%</Text>
+                        <Progress value={request.progress || 0} colorScheme="blue" size="sm" />
+                      </Box>
+                    </Box>
+                    <HStack spacing={2} align="start">
+                      <Button size="sm" colorScheme="blue" onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTask(request);
+                        setProgressUpdate({ progress: request.progress || 0, comment: '' });
+                        onProgressOpen();
+                      }}>Update Progress</Button>
+                      <Button size="sm" colorScheme="purple" onClick={(e) => {
+                        e.stopPropagation();
+                        handleChatClick(request);
+                      }}>Chat</Button>
+                      <Button size="sm" colorScheme="green" onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkAsDone(request._id);
+                      }}>Done</Button>
+                    </HStack>
+                  </Flex>
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+          <Box flex="1" bg={cardBg} p="6" borderRadius="md" boxShadow="md" minH="80vh" border="1px" borderColor={borderColor}>
+            <Heading size="md" mb="4" color={headingColor}>Incoming Requests</Heading>
+            <Flex mb="4" justify="space-between">
+              <Select 
+                value={incomingSortOption} 
+                onChange={handleIncomingSortChange} 
+                width="35%" 
+                outline={"1px solid"}
+                bg={useColorModeValue("white", "gray.600")}
+                _hover={{ borderColor: "blue.400" }}
+                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+              >
+                <option value="priority">Sort by Priority</option>
+                <option value="deadline">Sort by Deadline</option>
+              </Select>
+            </Flex>
+            <VStack spacing="4">
+              {sortedIncomingRequests.map(request => (
+                <Box 
+                  key={request._id} 
+                  p="4" 
+                  boxShadow="md" 
+                  borderRadius="md" 
+                  bg={useColorModeValue("white", "gray.600")} 
+                  w="100%" 
+                  border="1px" 
+                  borderColor={borderColor}
+                >
+                  <Flex justify="space-between">
+                    <Box>
+                      <Heading size="sm" color={textColor}>{request.taskName}</Heading>
+                      <Text color={textColor}>{request.description}</Text>
+                      <Text color={textColor}>Priority: {request.priority}</Text>
+                      <Text color={textColor}>Deadline: {new Date(request.deadline).toLocaleDateString()}</Text>
+                      <Text color={textColor}>Requester: {getRequesterName(request.assignedBy)}</Text>
+                    </Box>
+                    <Box>
+                      <Button size="sm" colorScheme="green" onClick={() => handleAcceptRequest(request._id)}>Accept</Button>
+                      <Button size="sm" ml="2" colorScheme="red" onClick={() => handleDeclineRequest(request._id)}>Decline</Button>
+                    </Box>
+                  </Flex>
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+        </Flex>
+
+        {/* Add TaskTimelineModal */}
+        <TaskTimelineModal 
+          isOpen={isTimelineOpen}
+          onClose={onTimelineClose}
+          task={selectedTaskForTimeline}
+          users={users}
+        />
+
+        {/* Modal for Declining a Request (Sahan Changes) */}
+               
+        <Modal isOpen={isOpen} onClose={() => {
+        onClose();
+        setReason("");
+        setAltDate(""); }}>
+
+        <ModalOverlay/>
+        <ModalContent>
+          <ModalHeader>Decline Request</ModalHeader>
+          <ModalCloseButton/>
+          <ModalBody>
+            <FormControl isRequired>
+              <FormLabel>Reason</FormLabel>
               <Textarea
-                value={progressUpdate.comment}
-                onChange={(e) => setProgressUpdate(prev => ({ ...prev, comment: e.target.value }))}
-                placeholder="Add a comment about the progress..."
+                value={reason}
+                onChange={e => setReason(e.target.value)}
               />
             </FormControl>
-          </VStack>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onProgressClose}>
-            Cancel
-          </Button>
-          <Button colorScheme="blue" onClick={handleProgressUpdate}>
-            Update
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            <FormControl mt={4} isRequired>
+              <FormLabel>Alternative Date</FormLabel>
+              <Input
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                value={altDate}
+                onChange={e => setAltDate(e.target.value)}
+              />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" onClick={() => { onClose(); setReason(""); setAltDate("");}}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" ml={3} onClick={handleDeclineSubmit}>
+              Decline
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-    {/* Chat Modal */}
-    <Modal isOpen={isChatOpen} onClose={onChatClose} size="xl">
-      <ModalOverlay />
-      <ModalContent h="80vh" pb={6}>
-        <ModalHeader>Chat - {selectedTaskForChat?.taskName}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody p={0}>
-          {selectedTaskForChat && selectedChatId && (
-            <Chat
-              chatId={selectedChatId}
-              currentUser={companyID}
-              users={users}
-            />
-          )}
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+      {/* Progress Update Modal */}
+      <Modal isOpen={isProgressOpen} onClose={onProgressClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Update Progress</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Progress (%)</FormLabel>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={progressUpdate.progress}
+                  onChange={(e) => setProgressUpdate(prev => ({ ...prev, progress: parseInt(e.target.value) }))}
+                  required
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Comment</FormLabel>
+                <Textarea
+                  value={progressUpdate.comment}
+                  onChange={(e) => setProgressUpdate(prev => ({ ...prev, comment: e.target.value }))}
+                  placeholder="Add a comment about the progress..."
+                />
+              </FormControl>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onProgressClose}>
+              Cancel
+            </Button>
+            <Button colorScheme="blue" onClick={handleProgressUpdate}>
+              Update
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
+      {/* Chat Modal */}
+      <Modal isOpen={isChatOpen} onClose={onChatClose} size="xl">
+        <ModalOverlay />
+        <ModalContent h="80vh" pb={6}>
+          <ModalHeader>Chat - {selectedTaskForChat?.taskName}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody p={0}>
+            {selectedTaskForChat && selectedChatId && (
+              <Chat
+                chatId={selectedChatId}
+                currentUser={companyID}
+                users={users}
+              />
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      </Box>
     </Box>
   );
 };

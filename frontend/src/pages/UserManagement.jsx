@@ -22,8 +22,15 @@ import {
   FormControl,
   FormLabel,
   Input,
+  useColorModeValue,
+  Image,
+  Icon,
+  InputGroup,
+  InputLeftElement
 } from "@chakra-ui/react";
+import { FiSearch, FiUser, FiMail, FiKey, FiPhone } from 'react-icons/fi';
 import axios from "axios";
+import teamsImage from "../assets/teams.png";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -31,6 +38,14 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null); // Store the selected user
   const [isModalOpen, setIsModalOpen] = useState(false); // Control modal visibility
   const toast = useToast();
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "white");
+  const headingColor = useColorModeValue("blue.600", "blue.300");
+  const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
+  const tableRowHover = useColorModeValue("gray.50", "gray.600");
+  const inputBg = useColorModeValue("gray.50", "gray.600");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -227,29 +242,194 @@ const UserManagement = () => {
   };
 
   return (
-    <Container maxW="container.lg" mt={10}>
-      <Box p={6} borderRadius="lg" boxShadow="lg" bg="white">
-        <Heading textAlign="center" mb={6} color="blue.600">
-          Admin Dashboard - User Management
-        </Heading>
-        <Table variant="striped" colorScheme="blue">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Email</Th>
-              <Th>Role</Th>
-              <Th>Actions</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {users.map((user) => (
-              <Tr key={user._id}>
-                <Td>{user.fullName}</Td>
-                <Td>{user.email}</Td>
-                <Td>
+    <Box 
+      minH="100vh" 
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={teamsImage}
+          alt="User Management Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
+        />
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
+      </Box>
+
+      {/* Content Container */}
+      <Container maxW="container.lg" mt={10} position="relative" zIndex="1">
+        <Box 
+          p={6} 
+          borderRadius="xl" 
+          boxShadow="lg" 
+          bg={cardBg}
+          border="1px"
+          borderColor={borderColor}
+        >
+          <Heading textAlign="center" mb={6} color={headingColor}>
+            Admin Dashboard - User Management
+          </Heading>
+          <Table variant="simple">
+            <Thead bg={tableHeaderBg}>
+              <Tr>
+                <Th color={textColor}>Name</Th>
+                <Th color={textColor}>Email</Th>
+                <Th color={textColor}>Role</Th>
+                <Th color={textColor}>Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {users.map((user) => (
+                <Tr 
+                  key={user._id}
+                  _hover={{ bg: tableRowHover }}
+                  transition="all 0.2s"
+                >
+                  <Td color={textColor}>{user.fullName}</Td>
+                  <Td color={textColor}>{user.email}</Td>
+                  <Td>
+                    <Select
+                      value={editedRoles[user._id] || user.role}
+                      onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                      bg={inputBg}
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                    >
+                      <option value="Employee">Employee</option>
+                      <option value="BusinessOwner">Business owner</option>
+                      <option value="TeamLeads">Team Leads</option>
+                      <option value="HR">HR</option>
+                      <option value="Admin">Admin</option>
+                      <option value="ITSupport">IT support</option>
+                      <option value="Manager">Manager</option>
+                    </Select>
+                  </Td>
+                  <Td>
+                    <Button
+                      colorScheme={user.locked ? "green" : "red"}
+                      size="sm"
+                      mr="2"
+                      onClick={() =>
+                        user.locked ? handleUnlockUser(user._id) : handleTerminateUser(user._id)
+                      }
+                      _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+                      transition="all 0.2s"
+                    >
+                      {user.locked ? "Unlock" : "Terminate"}
+                    </Button>
+                    <Button 
+                      colorScheme="blue" 
+                      size="sm" 
+                      mr="2" 
+                      onClick={() => handleViewUser(user)}
+                      _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+                      transition="all 0.2s"
+                    >
+                      View
+                    </Button>
+                    <Button 
+                      colorScheme="red" 
+                      size="sm" 
+                      onClick={() => handleDeleteUser(user._id)}
+                      _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+                      transition="all 0.2s"
+                    >
+                      Delete
+                    </Button>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
+
+        {/* Modal for viewing/editing user */}
+        {selectedUser && (
+          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+            <ModalOverlay />
+            <ModalContent bg={cardBg}>
+              <ModalHeader color={headingColor}>Edit User</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <FormControl isRequired>
+                  <FormLabel color={textColor}>Full Name</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <Icon as={FiUser} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      value={selectedUser.fullName}
+                      onChange={(e) =>
+                        setSelectedUser({ ...selectedUser, fullName: e.target.value })
+                      }
+                      bg={inputBg}
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                    />
+                  </InputGroup>
+                </FormControl>
+                <FormControl isRequired mt={4}>
+                  <FormLabel color={textColor}>Email</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <Icon as={FiMail} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      type="email"
+                      value={selectedUser.email}
+                      onChange={(e) =>
+                        setSelectedUser({ ...selectedUser, email: e.target.value })
+                      }
+                      bg={inputBg}
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                    />
+                  </InputGroup>
+                </FormControl>
+                <FormControl isRequired mt={4}>
+                  <FormLabel color={textColor}>Company ID</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <Icon as={FiKey} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      value={selectedUser.companyID}
+                      onChange={(e) =>
+                        setSelectedUser({ ...selectedUser, companyID: e.target.value })
+                      }
+                      bg={inputBg}
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                    />
+                  </InputGroup>
+                </FormControl>
+                <FormControl isRequired mt={4}>
+                  <FormLabel color={textColor}>Role</FormLabel>
                   <Select
-                    value={editedRoles[user._id] || user.role}
-                    onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                    value={selectedUser.role}
+                    onChange={(e) =>
+                      setSelectedUser({ ...selectedUser, role: e.target.value })
+                    }
+                    bg={inputBg}
+                    _hover={{ borderColor: "blue.400" }}
+                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
                   >
                     <option value="Employee">Employee</option>
                     <option value="BusinessOwner">Business owner</option>
@@ -259,107 +439,50 @@ const UserManagement = () => {
                     <option value="ITSupport">IT support</option>
                     <option value="Manager">Manager</option>
                   </Select>
-                </Td>
-                <Td>
-                  <Button
-                    colorScheme={user.locked ? "green" : "red"}
-                    size="sm"
-                    mr="2"
-                    onClick={() =>
-                      user.locked ? handleUnlockUser(user._id) : handleTerminateUser(user._id)
-                    }
-                  >
-                    {user.locked ? "Unlock" : "Terminate"}
-                  </Button>
-                  <Button colorScheme="blue" size="sm" mr="2" onClick={() => handleViewUser(user)}>
-                    View
-                  </Button>
-                  <Button colorScheme="red" size="sm" onClick={() => handleDeleteUser(user._id)}>
-                    Delete
-                  </Button>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
+                </FormControl>
+                <FormControl isRequired mt={4}>
+                  <FormLabel color={textColor}>Contact Number</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <Icon as={FiPhone} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      value={selectedUser.contactNumber}
+                      onChange={(e) =>
+                        setSelectedUser({ ...selectedUser, contactNumber: e.target.value })
+                      }
+                      bg={inputBg}
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                    />
+                  </InputGroup>
+                </FormControl>
+              </ModalBody>
 
-      {/* Modal for viewing/editing user */}
-      {selectedUser && (
-        <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Edit User</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormControl isRequired>
-                <FormLabel>Full Name</FormLabel>
-                <Input
-                  value={selectedUser.fullName}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, fullName: e.target.value })
-                  }
-                />
-              </FormControl>
-              <FormControl isRequired mt={4}>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  type="email"
-                  value={selectedUser.email}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, email: e.target.value })
-                  }
-                />
-              </FormControl>
-              <FormControl isRequired mt={4}>
-                <FormLabel>Company ID</FormLabel>
-                <Input
-                  value={selectedUser.companyID}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, companyID: e.target.value })
-                  }
-                />
-              </FormControl>
-              <FormControl isRequired mt={4}>
-                <FormLabel>Role</FormLabel>
-                <Select
-                  value={selectedUser.role}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, role: e.target.value })
-                  }
+              <ModalFooter>
+                <Button 
+                  colorScheme="blue" 
+                  onClick={handleUpdateUser}
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+                  transition="all 0.2s"
                 >
-                  <option value="Employee">Employee</option>
-                  <option value="BusinessOwner">Business owner</option>
-                  <option value="TeamLeads">Team Leads</option>
-                  <option value="HR">HR</option>
-                  <option value="Admin">Admin</option>
-                  <option value="ITSupport">IT support</option>
-                  <option value="Manager">Manager</option>
-                </Select>
-              </FormControl>
-              <FormControl isRequired mt={4}>
-                <FormLabel>Contact Number</FormLabel>
-                <Input
-                  value={selectedUser.contactNumber}
-                  onChange={(e) =>
-                    setSelectedUser({ ...selectedUser, contactNumber: e.target.value })
-                  }
-                />
-              </FormControl>
-            </ModalBody>
-
-            <ModalFooter>
-              <Button colorScheme="blue" onClick={handleUpdateUser}>
-                Save Changes
-              </Button>
-              <Button variant="ghost" onClick={handleCloseModal} ml={3}>
-                Cancel
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
-    </Container>
+                  Save Changes
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={handleCloseModal} 
+                  ml={3}
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+                  transition="all 0.2s"
+                >
+                  Cancel
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+        )}
+      </Container>
+    </Box>
   );
 };
 

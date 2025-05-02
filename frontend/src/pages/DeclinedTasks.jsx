@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
   Box, Heading, Table, Thead, Tbody, Tr, Th, Td,
-  Input, Flex, useToast, Button
+  Input, Flex, useToast, Button, useColorModeValue,
+  Image, InputGroup, InputLeftElement, Icon
 } from "@chakra-ui/react";
+import { FiSearch } from 'react-icons/fi';
 import axios from "axios";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import teamsImage from "../assets/teams.png";
 
 const DeclinedTasks = () => {
   const [entries, setEntries]     = useState([]);
@@ -13,6 +16,14 @@ const DeclinedTasks = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const toast = useToast();
   const companyID = localStorage.getItem("companyID");
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "white");
+  const headingColor = useColorModeValue("blue.600", "blue.300");
+  const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
+  const tableRowHover = useColorModeValue("gray.50", "gray.600");
+  const inputBg = useColorModeValue("gray.50", "gray.600");
 
   useEffect(() => {
     // 1) Fetch TS→full‑name map
@@ -74,45 +85,100 @@ const DeclinedTasks = () => {
   };
 
   return (
-    <Box p="8">
-      <Heading mb="6">Declined Requests</Heading>
-      <Flex mb="4" justify="space-between">
-        <Input
-          placeholder="Search by Employee Name or Task Name"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          width="40%"
-          outline="1px solid"
+    <Box 
+      minH="100vh" 
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={teamsImage}
+          alt="Declined Tasks Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
         />
-        <Button colorScheme="blue" onClick={handleExportPDF}>
-          Export PDF
-        </Button>
-      </Flex>
-      <Box bg="white" p="4" borderRadius="md" boxShadow="md">
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Task Name</Th>
-              <Th>Requested By</Th>
-              <Th>Declined By</Th>
-              <Th>Declined On</Th>
-              <Th>Reason</Th>
-              <Th>Alt. Date</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {filtered.map((d) => (
-              <Tr key={d._id}>
-                <Td>{d.title}</Td>
-                <Td>{getName(d.assignedBy)}</Td>
-                <Td>{getName(d.assignee)}</Td>
-                <Td>{new Date(d.declinedOn).toLocaleDateString()}</Td>
-                <Td>{d.declinedReason}</Td>
-                <Td>{new Date(d.alternativeDate).toLocaleDateString()}</Td>
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
+      </Box>
+
+      {/* Content Container */}
+      <Box p="8" position="relative" zIndex="1">
+        <Heading mb="6" color={headingColor}>Declined Requests</Heading>
+        <Flex mb="4" justify="space-between">
+          <InputGroup width="40%">
+            <InputLeftElement pointerEvents="none">
+              <Icon as={FiSearch} color="gray.400" />
+            </InputLeftElement>
+            <Input
+              placeholder="Search by Employee Name or Task Name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              bg={inputBg}
+              _hover={{ borderColor: "blue.400" }}
+              _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+            />
+          </InputGroup>
+          <Button 
+            colorScheme="blue" 
+            onClick={handleExportPDF}
+            _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+            transition="all 0.2s"
+          >
+            Export PDF
+          </Button>
+        </Flex>
+        <Box 
+          bg={cardBg} 
+          p="4" 
+          borderRadius="xl" 
+          boxShadow="lg"
+          border="1px"
+          borderColor={borderColor}
+        >
+          <Table variant="simple">
+            <Thead bg={tableHeaderBg}>
+              <Tr>
+                <Th color={textColor}>Task Name</Th>
+                <Th color={textColor}>Requested By</Th>
+                <Th color={textColor}>Declined By</Th>
+                <Th color={textColor}>Declined On</Th>
+                <Th color={textColor}>Reason</Th>
+                <Th color={textColor}>Alt. Date</Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
+            </Thead>
+            <Tbody>
+              {filtered.map((d) => (
+                <Tr 
+                  key={d._id}
+                  _hover={{ bg: tableRowHover }}
+                  transition="all 0.2s"
+                >
+                  <Td color={textColor}>{d.title}</Td>
+                  <Td color={textColor}>{getName(d.assignedBy)}</Td>
+                  <Td color={textColor}>{getName(d.assignee)}</Td>
+                  <Td color={textColor}>{new Date(d.declinedOn).toLocaleDateString()}</Td>
+                  <Td color={textColor}>{d.declinedReason}</Td>
+                  <Td color={textColor}>{new Date(d.alternativeDate).toLocaleDateString()}</Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
       </Box>
     </Box>
   );

@@ -1,18 +1,50 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import { Box, Flex, Heading, Text, VStack, Button, Grid, GridItem, IconButton,
-  Popover, PopoverTrigger, PopoverContent, PopoverArrow, PopoverCloseButton, PopoverBody, Spinner } from "@chakra-ui/react";
-  
-import { FiHome, FiSend, FiFileText, FiUsers, FiPenTool, FiLogOut } from "react-icons/fi";
+import {
+  Box,
+  Flex,
+  Heading,
+  Text,
+  VStack,
+  Button,
+  Grid,
+  GridItem,
+  IconButton,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverBody,
+  Spinner,
+  useColorModeValue,
+  Badge,
+  Avatar,
+  Divider,
+  HStack,
+  Icon,
+  Image,
+} from "@chakra-ui/react";
+import {
+  FiHome,
+  FiSend,
+  FiFileText,
+  FiUsers,
+  FiPenTool,
+  FiLogOut,
+  FiBell,
+  FiActivity,
+  FiTrendingUp,
+  FiClock,
+} from "react-icons/fi";
 import axios from "axios";
 import Requests from "./Requests";
 import Tasks from "./Tasks";
 import Collaborations from "./Collaborations";
 import Feedback from "./Feedback";
 import MyCollaborationHub from './MyCollaborationHub';
-
 import NotificationBell from "../components/NotificationBell";
-
+import newImage from "../assets/teams.png";
 
 const DashboardHome = () => {
   const [fullName, setFullName] = useState("");
@@ -22,6 +54,12 @@ const DashboardHome = () => {
   const [recentActivities, setRecentActivities] = useState([]);
   const [collaborations, setCollaborations] = useState([]);
   const navigate = useNavigate();
+
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const textColor = useColorModeValue("gray.600", "gray.400");
+  const cardBg = useColorModeValue("white", "gray.700");
+  const hoverBg = useColorModeValue("gray.50", "gray.600");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -110,121 +148,436 @@ const DashboardHome = () => {
   };
 
   return (
-    <Box p="8">
-      <Heading mb="12" size="lg">
-        Welcome, {fullName} {companyID && `(${companyID})`} !
-      </Heading>
-      <Flex>
-        <Box flex="3" mr="4">
-          <Grid templateColumns="repeat(3, 1fr)" gap={6} mb="12">
-            <GridItem>
-              <Box p="6" boxShadow="md" borderRadius="md" bg="blue.50">
-                <Heading size="md">Requests Made</Heading>
-                <Text mt="2" fontSize="lg">
-                  Requests Made: {statistics.requestsMade}
-                </Text>
-              </Box>
-            </GridItem>
-            <GridItem>
-              <Box p="6" boxShadow="md" borderRadius="md" bg="blue.50">
-                <Heading size="md">To-do Tasks</Heading>
-                <Text mt="2" fontSize="lg">
-                  To-do Tasks: {statistics.todoTasks}
-                </Text>
-              </Box>
-            </GridItem>
-            <GridItem>
-              <Box p="6" boxShadow="md" borderRadius="md" bg="blue.50">
-                <Heading size="md">Incoming Requests</Heading>
-                <Text mt="2" fontSize="lg">
-                  Incoming Requests: {statistics.incomingRequests}
-                </Text>
-              </Box>
-            </GridItem>
-          </Grid>
-          <Box p="6" boxShadow="md" borderRadius="md" bg="white" mb="12">
-            <Heading size="md" mb="2">
-              Your Collaborations
-            </Heading>
-            {collaborations.map((collaboration, index) => (
-              <Text key={index} fontSize="lg">
-                {collaboration.taskName} - {collaboration.assignedBy === companyID ? "Requested By You" : "Accepted By You"}
+    <Box 
+      p="8" 
+      minH="100vh"
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={newImage}
+          alt="Dashboard Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
+        />
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
+      </Box>
+
+      {/* Content Container */}
+      <Box position="relative" zIndex="1">
+        <Flex justify="space-between" align="center" mb="8">
+          <HStack spacing="4">
+            <Avatar
+              size="lg"
+              name={fullName}
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=2563eb&color=fff`}
+            />
+            <Box>
+              <Heading size="lg" color={useColorModeValue("gray.700", "white")}>
+                Welcome back, {fullName}
+                {companyID && (
+                  <Badge ml="2" colorScheme="blue" fontSize="sm">
+                    {companyID}
+                  </Badge>
+                )}
+              </Heading>
+              <Text color={textColor} mt="1">
+                Here's what's happening with your tasks
               </Text>
-            ))}
-          </Box>
-          <Box p="6" boxShadow="md" borderRadius="md" bg="white" mb="8">
-            <Heading size="md" mb="2">
-              Recent Activities
-            </Heading>
-            {recentActivities.map((activity, index) => (
-              <Text key={index} fontSize="lg">
-                {activity.taskName} was updated on {new Date(activity.updatedAt).toLocaleDateString()}
+            </Box>
+          </HStack>
+          <HStack spacing="4">
+            <NotificationBell companyID={companyID} />
+          </HStack>
+        </Flex>
+
+        <Grid templateColumns="repeat(3, 1fr)" gap={6} mb="8">
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.2s"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="100px"
+                h="100px"
+                bgGradient="linear(to-br, blue.400, blue.600)"
+                opacity="0.1"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiTrendingUp} boxSize="6" color="blue.500" />
+                <Heading size="md" color={textColor}>Requests Made</Heading>
+              </HStack>
+              <Text fontSize="3xl" fontWeight="bold" color="blue.500" position="relative">
+                {statistics.requestsMade}
               </Text>
-            ))}
-          </Box>
-        </Box>
-        <Box flex="1" bg="blue.50" p="6" borderRadius="md" boxShadow="md">
-          <Heading size="md" mb="4">Notifications</Heading>
-          {notifications.map((notification, index) => (
-            <Text key={index} mt="2" fontSize="lg">
-              New request: {notification.taskName}
-            </Text>
-          ))}
-        </Box>
-      </Flex>
+            </Box>
+          </GridItem>
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.2s"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="100px"
+                h="100px"
+                bgGradient="linear(to-br, green.400, green.600)"
+                opacity="0.1"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiFileText} boxSize="6" color="green.500" />
+                <Heading size="md" color={textColor}>To-do Tasks</Heading>
+              </HStack>
+              <Text fontSize="3xl" fontWeight="bold" color="green.500" position="relative">
+                {statistics.todoTasks}
+              </Text>
+            </Box>
+          </GridItem>
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.2s"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="100px"
+                h="100px"
+                bgGradient="linear(to-br, purple.400, purple.600)"
+                opacity="0.1"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiBell} boxSize="6" color="purple.500" />
+                <Heading size="md" color={textColor}>Incoming Request</Heading>
+              </HStack>
+              <Text fontSize="3xl" fontWeight="bold" color="purple.500" position="relative">
+                {statistics.incomingRequests}
+              </Text>
+            </Box>
+          </GridItem>
+        </Grid>
+
+        <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              mb="6"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="150px"
+                h="150px"
+                bgGradient="linear(to-br, blue.400, blue.600)"
+                opacity="0.05"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiUsers} boxSize="6" color="blue.500" />
+                <Heading size="md" color={textColor}>Your Collaborations</Heading>
+              </HStack>
+              <VStack align="stretch" spacing="4">
+                {collaborations.map((collaboration, index) => (
+                  <Box
+                    key={index}
+                    p="4"
+                    bg={hoverBg}
+                    borderRadius="lg"
+                    _hover={{ transform: "translateX(4px)" }}
+                    transition="all 0.2s"
+                  >
+                    <Text fontWeight="medium">{collaboration.taskName}</Text>
+                    <Text fontSize="sm" color={textColor}>
+                      {collaboration.assignedBy === companyID ? "Requested By You" : "Accepted By You"}
+                    </Text>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="150px"
+                h="150px"
+                bgGradient="linear(to-br, green.400, green.600)"
+                opacity="0.05"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiActivity} boxSize="6" color="green.500" />
+                <Heading size="md" color={textColor}>Recent Activities</Heading>
+              </HStack>
+              <VStack align="stretch" spacing="4">
+                {recentActivities.map((activity, index) => (
+                  <Box
+                    key={index}
+                    p="4"
+                    bg={hoverBg}
+                    borderRadius="lg"
+                    _hover={{ transform: "translateX(4px)" }}
+                    transition="all 0.2s"
+                  >
+                    <Text fontWeight="medium">{activity.taskName}</Text>
+                    <Text fontSize="sm" color={textColor}>
+                      Updated on {new Date(activity.updatedAt).toLocaleDateString()}
+                    </Text>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+          </GridItem>
+
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              height="100%"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="150px"
+                h="150px"
+                bgGradient="linear(to-br, purple.400, purple.600)"
+                opacity="0.05"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiClock} boxSize="6" color="purple.500" />
+                <Heading size="md" color={textColor}>New Request Alerts</Heading>
+              </HStack>
+              <VStack align="stretch" spacing="4">
+                {notifications.map((notification, index) => (
+                  <Box
+                    key={index}
+                    p="4"
+                    bg={hoverBg}
+                    borderRadius="lg"
+                    _hover={{ transform: "translateX(4px)" }}
+                    transition="all 0.2s"
+                  >
+                    <Text fontWeight="medium">New request</Text>
+                    <Text fontSize="sm" color={textColor}>
+                      {notification.taskName}
+                    </Text>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+          </GridItem>
+        </Grid>
+      </Box>
     </Box>
   );
 };
 
 const UserSidebar = () => {
   const navigate = useNavigate();
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const hoverBg = useColorModeValue("blue.50", "blue.900");
+  const activeBg = useColorModeValue("blue.100", "blue.800");
+  const textColor = useColorModeValue("gray.700", "white");
+  const activeTextColor = useColorModeValue("blue.600", "blue.200");
 
   return (
-        //sahan changes notification button
-    <Box bg="blue.200" w="250px" minH="100vh" p="4">
-           {/* Sidebar header with the bell popover */}
+    <Box
+      bg={bgColor}
+      w="280px"
+      minH="100vh"
+      p="6"
+      borderRight="1px"
+      borderColor={borderColor}
+      position="sticky"
+      top="0"
+    >
       <Flex align="center" mb="8">
-        <Heading size="lg" fontSize="2xl">TeamSync</Heading>
-
-       {/* the bell will fetch & pop over on click */}
-        <Box ml="auto">
-          <NotificationBell companyID={localStorage.getItem("companyID")}
-            iconSize={28}      
-            buttonSize="md"  />
-        </Box>
+        <Heading size="lg" fontSize="2xl" bgGradient="linear(to-r, blue.400, blue.600)" bgClip="text">
+          TeamSync
+        </Heading>
       </Flex>
 
-      <VStack align="start" spacing="4">
-        <Button variant="ghost" leftIcon={<FiHome />} onClick={() => navigate("/dashboard")}>
+      <VStack align="stretch" spacing="2">
+        <Button
+          variant="ghost"
+          leftIcon={<FiHome />}
+          onClick={() => navigate("/dashboard")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
           Dashboard
         </Button>
-        <Button variant="ghost" leftIcon={<FiSend />} onClick={() => navigate("/dashboard/requests")}>
+        <Button
+          variant="ghost"
+          leftIcon={<FiSend />}
+          onClick={() => navigate("/dashboard/requests")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
           Requests
         </Button>
-        <Button variant="ghost" leftIcon={<FiFileText />} onClick={() => navigate("/dashboard/tasks")}>
+        <Button
+          variant="ghost"
+          leftIcon={<FiFileText />}
+          onClick={() => navigate("/dashboard/tasks")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
           Journal
         </Button>
-        <Button variant="ghost" leftIcon={<FiUsers />} onClick={() => navigate("/dashboard/collaborations")}>
+        <Button
+          variant="ghost"
+          leftIcon={<FiUsers />}
+          onClick={() => navigate("/dashboard/collaborations")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
           Collaborations
         </Button>
-        <Button variant="ghost" leftIcon={<FiPenTool />} onClick={() => navigate("/dashboard/my-collaboration-hub")}>My Collaboration Hub</Button>
-        <Button variant="ghost" leftIcon={<FiPenTool />} onClick={() => navigate("/dashboard/feedback")}>
+        <Button
+          variant="ghost"
+          leftIcon={<FiPenTool />}
+          onClick={() => navigate("/dashboard/my-collaboration-hub")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
+          My Collaboration Hub
+        </Button>
+        <Button
+          variant="ghost"
+          leftIcon={<FiPenTool />}
+          onClick={() => navigate("/dashboard/feedback")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
           Feedback
         </Button>
       </VStack>
-      <Box mt="4">
-        <Button
-          variant="ghost"
-          leftIcon={<FiLogOut />}
-          onClick={() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            navigate("/login");
-          }}
-        >
-          Logout
-        </Button>
-      </Box>
+
+      <Divider my="6" />
+
+      <Button
+        variant="ghost"
+        leftIcon={<FiLogOut />}
+        onClick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          navigate("/login");
+        }}
+        justifyContent="flex-start"
+        _hover={{ bg: "red.50", color: "red.500", transform: "translateX(4px)" }}
+        size="lg"
+        transition="all 0.2s"
+      >
+        Logout
+      </Button>
     </Box>
   );
 };
@@ -232,7 +585,7 @@ const UserSidebar = () => {
 const UserDashboardLayout = () => (
   <Flex>
     <UserSidebar />
-    <Box flex="1" bg="gray.100" minH="100vh">
+    <Box flex="1" minH="100vh">
       <Routes>
         <Route path="/" element={<DashboardHome />} />
         <Route path="dashboard" element={<DashboardHome />} />
