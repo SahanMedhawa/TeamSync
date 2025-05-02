@@ -16,7 +16,7 @@ import {
   Avatar,
   HStack
 } from '@chakra-ui/react';
-import { FiHome, FiUsers, FiFileText, FiBell, FiTerminal, FiLogOut, FiActivity, FiSend, FiSettings } from 'react-icons/fi';
+import { FiHome, FiUsers, FiFileText, FiBell, FiTerminal, FiLogOut, FiActivity, FiSend, FiSettings,FiXOctagon } from 'react-icons/fi';
 import axios from 'axios';
 import UserManagement from './UserManagement';
 import Evaluation from './Evaluation';
@@ -446,7 +446,7 @@ const AdminSidebar = () => {
         </Button>
         <Button
           variant="ghost"
-          leftIcon={<FiSend />}
+          leftIcon={<FiXOctagon />}
           onClick={() => navigate("/admindashboard/declinedtask")}
           justifyContent="flex-start"
           _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}

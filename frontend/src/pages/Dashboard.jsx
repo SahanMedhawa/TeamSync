@@ -33,6 +33,7 @@ import {
   FiPenTool,
   FiLogOut,
   FiBell,
+  FiTrello,
   FiActivity,
   FiTrendingUp,
   FiClock,
@@ -535,7 +536,7 @@ const UserSidebar = () => {
         </Button>
         <Button
           variant="ghost"
-          leftIcon={<FiPenTool />}
+          leftIcon={<FiTrello />}
           onClick={() => navigate("/dashboard/my-collaboration-hub")}
           justifyContent="flex-start"
           _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
