@@ -527,7 +527,7 @@ const MyTasks = () => {
               <FormLabel>Alternative Date</FormLabel>
               <Input
                 type="date"
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toISOString().split('T')[0]}// Prevent past dates
                 value={altDate}
                 onChange={e => setAltDate(e.target.value)}
               />
