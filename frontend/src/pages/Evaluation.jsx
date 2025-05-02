@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Table, Thead, Tbody, Tr, Th, Td, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody,
-  ModalFooter, FormControl, FormLabel, Input, Textarea, Select, useToast, Heading, Text, Menu, MenuButton, MenuList, MenuItem, IconButton
+  ModalFooter, FormControl, FormLabel, Input, Textarea, Select, useToast, Heading, Text, Menu, MenuButton, MenuList, MenuItem, IconButton,
+  useColorModeValue, Image, InputGroup, InputLeftElement, Icon
 } from '@chakra-ui/react';
-import { FiMoreVertical } from 'react-icons/fi';
+import { FiMoreVertical, FiSearch } from 'react-icons/fi';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import EvaluationModals from '../components/EvaluationModals';
 import DatePicker from 'react-datepicker'; 
 import 'react-datepicker/dist/react-datepicker.css';
+import teamsImage from "../assets/teams.png";
 
 const Evaluation = () => {
   const [employees, setEmployees] = useState([]);
@@ -25,6 +27,14 @@ const Evaluation = () => {
   const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
   const { isOpen: isHistoryOpen, onOpen: onHistoryOpen, onClose: onHistoryClose } = useDisclosure();
   const toast = useToast();
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "white");
+  const headingColor = useColorModeValue("blue.600", "blue.300");
+  const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
+  const tableRowHover = useColorModeValue("gray.50", "gray.600");
+  const inputBg = useColorModeValue("gray.50", "gray.600");
 
   useEffect(() => {
     fetchEmployees();
@@ -263,155 +273,252 @@ const Evaluation = () => {
   const isFutureDate = filterDate > new Date();
 
   return (
-    <Box p="8">
-      <Heading mb="8">Employee Evaluations</Heading>
-      <Box bg="blue.50" p="6" borderRadius="md" minH="80vh">
-        <Box display="flex" mb="4">
-          <Input
-            placeholder="Search by employee name"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            flex="1"
-            mr="4"
-            outline="1px solid"
-          />
-          <Button onClick={handleExportPDF} colorScheme="blue">
-            Export PDF
-          </Button>
-        </Box>
-        <FormControl mb="4" outline="1px solid black" borderRadius="md" padding="3">
-          <FormLabel>Filter by Month and Year</FormLabel>
-          <DatePicker
-            selected={filterDate}
-            onChange={(date) => setFilterDate(date)}
-            dateFormat="MM/yyyy"
-            showMonthYearPicker
-          />
-        </FormControl>
-        <FormControl mb="4">
-          <FormLabel>Sort By</FormLabel>
-          <Select value={sort} onChange={handleSortChange} outline="1px solid">
-            <option value="none">None</option>
-            <option value="grade">Grade (Highest First)</option>
-            <option value="status">Evaluation Status (Not Evaluated First)</option>
-          </Select>
-        </FormControl>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Employee</Th>
-              <Th>Role</Th>
-              <Th>Acceptance Rate</Th>
-              <Th>Completion Rate</Th>
-              <Th>Ontime Rate</Th>
-              <Th>Grade</Th>
-              <Th>Action</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {sortedEmployees.map((employee) => {
-              const evaluation = evaluations.find(e => 
-                e.employee === employee.fullName && 
-                e.month === filterDate.toLocaleString('default', { month: 'long', year: 'numeric' })
-              );
-              
-              const requests = employee.requests.filter(request => {
-                const requestDate = new Date(request.createdAt);
-                return (
-                  requestDate.getMonth() === filterDate.getMonth() &&
-                  requestDate.getFullYear() === filterDate.getFullYear()
-                );
-              });
-              
-              const totalRequests = requests.length;
-              const accepted = requests.filter(r => r.status === 'ongoing').length;
-              const declined = requests.filter(r => r.status === 'declined').length;
-              const completed = requests.filter(r => r.status === 'completed').length;
-              
-              const acceptanceRate = (accepted + declined) > 0 ? 
-                (accepted / (accepted + declined + completed)) * 100 : 0;
-              const completedRate = totalRequests > 0 ? 
-                (completed / totalRequests) * 100 : 0;
-              const ontimeRate = completed > 0 ? 
-                (requests.filter(r => r.status === 'completed' && new Date(r.completedOn) <= new Date(r.deadline)).length / completed) * 100 : 0;
-              
-              return (
-                <Tr key={employee.fullName}>
-                  <Td>
-                    <Button variant="link" onClick={() => handleEmployeeClick(employee)}>
-                      {employee.fullName}
-                    </Button>
-                  </Td>
-                  <Td>{employee.role}</Td>
-                  <Td>{totalRequests > 0 ? `${acceptanceRate.toFixed(0)}%` : 'N/A'}</Td>
-                  <Td>{totalRequests > 0 ? `${completedRate.toFixed(0)}%` : 'N/A'}</Td>
-                  <Td>{completed > 0 ? `${ontimeRate.toFixed(0)}%` : 'N/A'}</Td>
-                  <Td>{evaluation ? evaluation.grade : 'N/A'}</Td>
-                  <Td>
-                    <Box display="flex" alignItems="center">
-                      <Button 
-                        colorScheme="blue" 
-                        onClick={() => handleEvaluate(employee)} 
-                        disabled={!!evaluation || isFutureDate}
-                      >
-                        {evaluation ? 'Evaluated' : 'Evaluate'}
-                      </Button>
-                      <Menu>
-                        <MenuButton as={IconButton} icon={<FiMoreVertical />} variant="outline" ml="2" />
-                        <MenuList>
-                          <MenuItem onClick={() => handleEdit(employee)} isDisabled={!evaluation}>Edit</MenuItem>
-                          <MenuItem onClick={() => handleDeleteEvaluation(employee)} isDisabled={!evaluation}>Delete</MenuItem>
-                        </MenuList>
-                      </Menu>
-                    </Box>
-                  </Td>
-                </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
+    <Box 
+      minH="100vh" 
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={teamsImage}
+          alt="Evaluation Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
+        />
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
       </Box>
 
-      <EvaluationModals
-        isOpen={isOpen}
-        onClose={onClose}
-        isEditOpen={isEditOpen}
-        onEditClose={onEditClose}
-        selectedEmployee={selectedEmployee}
-        grade={grade}
-        setGrade={setGrade}
-        notes={notes}
-        setNotes={setNotes}
-        furtherAction={furtherAction}
-        setFurtherAction={setFurtherAction}
-        handleSaveEvaluation={handleSaveEvaluation}
-        handleUpdateEvaluation={handleUpdateEvaluation}
-      />
-
-      <Modal isOpen={isHistoryOpen} onClose={onHistoryClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Evaluation Details for {selectedEmployee?.fullName}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {evaluations
-              .filter(e => e.employee === selectedEmployee?.fullName)
-              .map((evaluation, index) => (
-                <Box key={index} mb="4" p="4" borderWidth="1px" borderRadius="md">
-                  <Text><strong>Grade:</strong> {evaluation.grade}</Text>
-                  <Text><strong>Notes:</strong> {evaluation.notes}</Text>
-                  <Text><strong>Further Action:</strong> {evaluation.furtherAction}</Text>
-                  <Text><strong>Timeframe:</strong> {evaluation.month}</Text>
-                </Box>
-              ))}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" onClick={onHistoryClose}>
-              Close
+      {/* Content Container */}
+      <Box p="8" position="relative" zIndex="1">
+        <Heading mb="8" color={headingColor}>Employee Evaluations</Heading>
+        <Box 
+          bg={cardBg} 
+          p="6" 
+          borderRadius="xl" 
+          boxShadow="lg" 
+          minH="80vh"
+          border="1px"
+          borderColor={borderColor}
+        >
+          <Box display="flex" mb="4">
+            <InputGroup flex="1" mr="4">
+              <InputLeftElement pointerEvents="none">
+                <Icon as={FiSearch} color="gray.400" />
+              </InputLeftElement>
+              <Input
+                placeholder="Search by employee name"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                bg={inputBg}
+                _hover={{ borderColor: "blue.400" }}
+                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+              />
+            </InputGroup>
+            <Button 
+              onClick={handleExportPDF} 
+              colorScheme="blue"
+              _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+              transition="all 0.2s"
+            >
+              Export PDF
             </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </Box>
+
+          <FormControl 
+            mb="4" 
+            border="1px" 
+            borderColor={borderColor}
+            borderRadius="md" 
+            padding="3"
+            bg={cardBg}
+          >
+            <FormLabel color={textColor}>Filter by Month and Year</FormLabel>
+            <DatePicker
+              selected={filterDate}
+              onChange={(date) => setFilterDate(date)}
+              dateFormat="MM/yyyy"
+              showMonthYearPicker
+              className="custom-datepicker"
+            />
+          </FormControl>
+
+          <FormControl mb="4">
+            <FormLabel color={textColor}>Sort By</FormLabel>
+            <Select 
+              value={sort} 
+              onChange={handleSortChange} 
+              bg={inputBg}
+              _hover={{ borderColor: "blue.400" }}
+              _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+            >
+              <option value="none">None</option>
+              <option value="grade">Grade (Highest First)</option>
+              <option value="status">Evaluation Status (Not Evaluated First)</option>
+            </Select>
+          </FormControl>
+
+          <Table variant="simple">
+            <Thead bg={tableHeaderBg}>
+              <Tr>
+                <Th color={textColor}>Employee</Th>
+                <Th color={textColor}>Role</Th>
+                <Th color={textColor}>Acceptance Rate</Th>
+                <Th color={textColor}>Completion Rate</Th>
+                <Th color={textColor}>Ontime Rate</Th>
+                <Th color={textColor}>Grade</Th>
+                <Th color={textColor}>Action</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {sortedEmployees.map((employee) => {
+                const evaluation = evaluations.find(e => 
+                  e.employee === employee.fullName && 
+                  e.month === filterDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+                );
+                
+                const requests = employee.requests.filter(request => {
+                  const requestDate = new Date(request.createdAt);
+                  return (
+                    requestDate.getMonth() === filterDate.getMonth() &&
+                    requestDate.getFullYear() === filterDate.getFullYear()
+                  );
+                });
+                
+                const totalRequests = requests.length;
+                const accepted = requests.filter(r => r.status === 'ongoing').length;
+                const declined = requests.filter(r => r.status === 'declined').length;
+                const completed = requests.filter(r => r.status === 'completed').length;
+                
+                const acceptanceRate = (accepted + declined) > 0 ? 
+                  (accepted / (accepted + declined + completed)) * 100 : 0;
+                const completedRate = totalRequests > 0 ? 
+                  (completed / totalRequests) * 100 : 0;
+                const ontimeRate = completed > 0 ? 
+                  (requests.filter(r => r.status === 'completed' && new Date(r.completedOn) <= new Date(r.deadline)).length / completed) * 100 : 0;
+                
+                return (
+                  <Tr 
+                    key={employee.fullName}
+                    _hover={{ bg: tableRowHover }}
+                    transition="all 0.2s"
+                  >
+                    <Td>
+                      <Button 
+                        variant="link" 
+                        onClick={() => handleEmployeeClick(employee)}
+                        color={textColor}
+                        _hover={{ color: "blue.500" }}
+                      >
+                        {employee.fullName}
+                      </Button>
+                    </Td>
+                    <Td color={textColor}>{employee.role}</Td>
+                    <Td color={textColor}>{totalRequests > 0 ? `${acceptanceRate.toFixed(0)}%` : 'N/A'}</Td>
+                    <Td color={textColor}>{totalRequests > 0 ? `${completedRate.toFixed(0)}%` : 'N/A'}</Td>
+                    <Td color={textColor}>{completed > 0 ? `${ontimeRate.toFixed(0)}%` : 'N/A'}</Td>
+                    <Td color={textColor}>{evaluation ? evaluation.grade : 'N/A'}</Td>
+                    <Td>
+                      <Box display="flex" alignItems="center">
+                        <Button 
+                          colorScheme="blue" 
+                          onClick={() => handleEvaluate(employee)} 
+                          disabled={!!evaluation || isFutureDate}
+                          _hover={{ transform: "translateY(-1px)", boxShadow: "md" }}
+                          transition="all 0.2s"
+                        >
+                          {evaluation ? 'Evaluated' : 'Evaluate'}
+                        </Button>
+                        <Menu>
+                          <MenuButton 
+                            as={IconButton} 
+                            icon={<FiMoreVertical />} 
+                            variant="outline" 
+                            ml="2"
+                            _hover={{ bg: tableRowHover }}
+                          />
+                          <MenuList bg={cardBg}>
+                            <MenuItem 
+                              onClick={() => handleEdit(employee)} 
+                              isDisabled={!evaluation}
+                              _hover={{ bg: tableRowHover }}
+                            >
+                              Edit
+                            </MenuItem>
+                            <MenuItem 
+                              onClick={() => handleDeleteEvaluation(employee)} 
+                              isDisabled={!evaluation}
+                              _hover={{ bg: tableRowHover }}
+                            >
+                              Delete
+                            </MenuItem>
+                          </MenuList>
+                        </Menu>
+                      </Box>
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Box>
+
+        <EvaluationModals
+          isOpen={isOpen}
+          onClose={onClose}
+          isEditOpen={isEditOpen}
+          onEditClose={onEditClose}
+          selectedEmployee={selectedEmployee}
+          grade={grade}
+          setGrade={setGrade}
+          notes={notes}
+          setNotes={setNotes}
+          furtherAction={furtherAction}
+          setFurtherAction={setFurtherAction}
+          handleSaveEvaluation={handleSaveEvaluation}
+          handleUpdateEvaluation={handleUpdateEvaluation}
+        />
+
+        <Modal isOpen={isHistoryOpen} onClose={onHistoryClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Evaluation Details for {selectedEmployee?.fullName}</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {evaluations
+                .filter(e => e.employee === selectedEmployee?.fullName)
+                .map((evaluation, index) => (
+                  <Box key={index} mb="4" p="4" borderWidth="1px" borderRadius="md">
+                    <Text><strong>Grade:</strong> {evaluation.grade}</Text>
+                    <Text><strong>Notes:</strong> {evaluation.notes}</Text>
+                    <Text><strong>Further Action:</strong> {evaluation.furtherAction}</Text>
+                    <Text><strong>Timeframe:</strong> {evaluation.month}</Text>
+                  </Box>
+                ))}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="ghost" onClick={onHistoryClose}>
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </Box>
     </Box>
   );
 };

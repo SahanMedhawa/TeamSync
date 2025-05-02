@@ -1,21 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { Box, Flex, Heading, Text, VStack, Button, Grid, GridItem } from '@chakra-ui/react';
-import { FiHome, FiUsers, FiFileText, FiBell, FiTerminal, FiLogOut, FiActivity,FiSend,FiSettings} from 'react-icons/fi';
+import { 
+  Box, 
+  Flex, 
+  Heading, 
+  Text, 
+  VStack, 
+  Button, 
+  Grid, 
+  GridItem,
+  useColorModeValue,
+  Icon,
+  Image,
+  Badge,
+  Avatar,
+  HStack
+} from '@chakra-ui/react';
+import { FiHome, FiUsers, FiFileText, FiBell, FiTerminal, FiLogOut, FiActivity, FiSend, FiSettings } from 'react-icons/fi';
 import axios from 'axios';
-import UserManagement from './UserManagement'; // Import the User Management component
-import Evaluation from './Evaluation'; // Import the Evaluation component
-//sahan changes
+import UserManagement from './UserManagement';
+import Evaluation from './Evaluation';
 import DeclinedTasks from './DeclinedTasks';
 import NotificationBell from '../components/NotificationBell';
+import teamsImage from "../assets/teams.png";
 
-// Dashboard Home component that fetches profile data
 const DashboardHome = () => {
   const [fullName, setFullName] = useState('');
   const [companyID, setCompanyID] = useState('');
   const [statistics, setStatistics] = useState({});
   const [recentActivities, setRecentActivities] = useState([]);
   const [notifications, setNotifications] = useState([]);
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.700", "white");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -108,104 +126,369 @@ const DashboardHome = () => {
   };
 
   return (
-    <Box p="10">
-      <Heading mb="14" size="lg">
-        Welcome, {fullName} {companyID && `(${companyID})`} !
-      </Heading>
-      <Flex>
-        <Box flex="3" mr="6">
-          <Grid templateColumns="repeat(3, 1fr)" gap={8} mb="14">
-            <GridItem>
-              <Box p="8" boxShadow="md" borderRadius="md" bg="blue.50" minH="150px">
-                <Heading size="md">Average Acceptance Rate</Heading>
-                <Text mt="4" fontSize="xl">
-                  {statistics.averageAcceptanceRate}%
-                </Text>
-              </Box>
-            </GridItem>
-            <GridItem>
-              <Box p="8" boxShadow="md" borderRadius="md" bg="blue.50" minH="150px">
-                <Heading size="md">Average Completion Rate</Heading>
-                <Text mt="4" fontSize="xl">
-                  {statistics.averageCompletionRate}%
-                </Text>
-              </Box>
-            </GridItem>
-            <GridItem>
-              <Box p="8" boxShadow="md" borderRadius="md" bg="blue.50" minH="150px">
-                <Heading size="md">Average Ontime Rate</Heading>
-                <Text mt="4" fontSize="xl">
-                  {statistics.averageOntimeRate}%
-                </Text>
-              </Box>
-            </GridItem>
-          </Grid>
-          <Box p="8" boxShadow="md" borderRadius="md" bg="white" mb="14" minH="50vh">
-            <Heading size="md" mb="8">
-              Recent Activities
-            </Heading>
-            {recentActivities.map((activity, index) => (
-              <Box key={index} mb="6">
-                <Flex align="center">
-                  <FiTerminal />
-                  <Text fontSize="xl" ml="4">
-                    {activity.employee} was evaluated on {new Date(activity.updatedAt).toLocaleDateString()}
-                  </Text>
-                </Flex>
-                <Box borderBottom="1px" borderColor="black" mt="4" />
-              </Box>
-            ))}
-          </Box>
-        </Box>
-        <Box flex="1" bg="blue.50" p="8" borderRadius="md" boxShadow="md" minH="50vh">
-          <Heading size="md" mb="8">Notifications</Heading>
-          {notifications.map((notification, index) => (
-            <Box key={index} mb="6">
-              <Flex align="center">
-                <FiBell />
-                <Text fontSize="xl" ml="4">
-                  {notification} has not yet been evaluated this month.
-                </Text>
-              </Flex>
-              <Box borderBottom="1px" borderColor="black" mt="4" />
+    <Box 
+      p="8" 
+      minH="100vh"
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={teamsImage}
+          alt="Dashboard Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
+        />
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
+      </Box>
+
+      {/* Content Container */}
+      <Box position="relative" zIndex="1">
+        <Flex justify="space-between" align="center" mb="8">
+          <HStack spacing="4">
+            <Avatar
+              size="lg"
+              name={fullName}
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=2563eb&color=fff`}
+            />
+            <Box>
+              <Heading size="lg" color={textColor}>
+                Welcome, {fullName}
+                {companyID && (
+                  <Badge ml="2" colorScheme="blue" fontSize="sm">
+                    {companyID}
+                  </Badge>
+                )}
+              </Heading>
+              <Text color={textColor} mt="1">
+                Admin Dashboard Overview
+              </Text>
             </Box>
-          ))}
-        </Box>
-      </Flex>
+          </HStack>
+        </Flex>
+
+        <Grid templateColumns="repeat(3, 1fr)" gap={6} mb="8">
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.2s"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="100px"
+                h="100px"
+                bgGradient="linear(to-br, blue.400, blue.600)"
+                opacity="0.1"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiActivity} boxSize="6" color="blue.500" />
+                <Heading size="md" color={textColor}>Average Acceptance Rate</Heading>
+              </HStack>
+              <Text fontSize="3xl" fontWeight="bold" color="blue.500" position="relative">
+                {statistics.averageAcceptanceRate}%
+              </Text>
+            </Box>
+          </GridItem>
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.2s"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="100px"
+                h="100px"
+                bgGradient="linear(to-br, green.400, green.600)"
+                opacity="0.1"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiTerminal} boxSize="6" color="green.500" />
+                <Heading size="md" color={textColor}>Average Completion Rate</Heading>
+              </HStack>
+              <Text fontSize="3xl" fontWeight="bold" color="green.500" position="relative">
+                {statistics.averageCompletionRate}%
+              </Text>
+            </Box>
+          </GridItem>
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.2s"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="100px"
+                h="100px"
+                bgGradient="linear(to-br, purple.400, purple.600)"
+                opacity="0.1"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiBell} boxSize="6" color="purple.500" />
+                <Heading size="md" color={textColor}>Average Ontime Rate</Heading>
+              </HStack>
+              <Text fontSize="3xl" fontWeight="bold" color="purple.500" position="relative">
+                {statistics.averageOntimeRate}%
+              </Text>
+            </Box>
+          </GridItem>
+        </Grid>
+
+        <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              mb="6"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="150px"
+                h="150px"
+                bgGradient="linear(to-br, blue.400, blue.600)"
+                opacity="0.05"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiActivity} boxSize="6" color="blue.500" />
+                <Heading size="md" color={textColor}>Recent Activities</Heading>
+              </HStack>
+              <VStack align="stretch" spacing="4">
+                {recentActivities.map((activity, index) => (
+                  <Box
+                    key={index}
+                    p="4"
+                    bg={useColorModeValue("gray.50", "gray.600")}
+                    borderRadius="lg"
+                    _hover={{ transform: "translateX(4px)" }}
+                    transition="all 0.2s"
+                  >
+                    <Text fontWeight="medium">{activity.employee}</Text>
+                    <Text fontSize="sm" color={textColor}>
+                      Evaluated on {new Date(activity.updatedAt).toLocaleDateString()}
+                    </Text>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+          </GridItem>
+
+          <GridItem>
+            <Box
+              p="6"
+              bg={cardBg}
+              borderRadius="xl"
+              boxShadow="sm"
+              border="1px"
+              borderColor={borderColor}
+              height="100%"
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="150px"
+                h="150px"
+                bgGradient="linear(to-br, purple.400, purple.600)"
+                opacity="0.05"
+                borderRadius="full"
+                transform="translate(30%, -30%)"
+              />
+              <HStack spacing="4" mb="4" position="relative">
+                <Icon as={FiBell} boxSize="6" color="purple.500" />
+                <Heading size="md" color={textColor}>Notifications</Heading>
+              </HStack>
+              <VStack align="stretch" spacing="4">
+                {notifications.map((notification, index) => (
+                  <Box
+                    key={index}
+                    p="4"
+                    bg={useColorModeValue("gray.50", "gray.600")}
+                    borderRadius="lg"
+                    _hover={{ transform: "translateX(4px)" }}
+                    transition="all 0.2s"
+                  >
+                    <Text fontWeight="medium">{notification}</Text>
+                    <Text fontSize="sm" color={textColor}>
+                      Has not been evaluated this month
+                    </Text>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+          </GridItem>
+        </Grid>
+      </Box>
     </Box>
   );
 };
 
-// Sidebar component
 const AdminSidebar = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
   const companyID = localStorage.getItem("companyID");
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const hoverBg = useColorModeValue("blue.50", "blue.900");
+  const activeBg = useColorModeValue("blue.100", "blue.800");
+  const textColor = useColorModeValue("gray.700", "white");
+  const activeTextColor = useColorModeValue("blue.600", "blue.200");
 
   return (
-    <Box bg="blue.300" w="250px" minH="100vh" p="4">
-      {/* Sidebar header with the bell popover */}
+    <Box
+      bg={bgColor}
+      w="280px"
+      minH="100vh"
+      p="6"
+      borderRight="1px"
+      borderColor={borderColor}
+      position="sticky"
+      top="0"
+    >
       <Flex align="center" mb="8">
-        <Heading size="md">TeamSync Admin</Heading>
+        <Heading size="lg" fontSize="2xl" bgGradient="linear(to-r, blue.400, blue.600)" bgClip="text">
+          TeamSync Admin
+        </Heading>
         <Box ml="auto">
           <NotificationBell companyID={companyID} iconSize={24} buttonSize="md" adminOnlyFeedback={true} />
         </Box>
       </Flex>
-      <VStack align="start" spacing="4">
-        <Button variant="ghost" leftIcon={<FiHome />} onClick={() => navigate("/admindashboard")}>Dashboard</Button>
-        <Button variant="ghost" leftIcon={<FiActivity />} onClick={() => navigate("/admindashboard/evaluation")}>Evaluation</Button>
-        {/* sahan changes */}
-        <Button variant="ghost" leftIcon={<FiSend />} onClick={() => navigate("/admindashboard/declinedtask")}>Declined Requests</Button>
+
+      <VStack align="stretch" spacing="2">
+        <Button
+          variant="ghost"
+          leftIcon={<FiHome />}
+          onClick={() => navigate("/admindashboard")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
+          Dashboard
+        </Button>
+        <Button
+          variant="ghost"
+          leftIcon={<FiActivity />}
+          onClick={() => navigate("/admindashboard/evaluation")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
+          Evaluation
+        </Button>
+        <Button
+          variant="ghost"
+          leftIcon={<FiSend />}
+          onClick={() => navigate("/admindashboard/declinedtask")}
+          justifyContent="flex-start"
+          _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+          _active={{ bg: activeBg }}
+          size="lg"
+          color={textColor}
+          transition="all 0.2s"
+        >
+          Declined Requests
+        </Button>
         {(role === "Admin" || role === "BusinessOwner" || role === "Manager") && (
-          <Button variant="ghost" leftIcon={<FiUsers />} onClick={() => navigate("/admindashboard/user-management")}>User Management</Button>
+          <Button
+            variant="ghost"
+            leftIcon={<FiUsers />}
+            onClick={() => navigate("/admindashboard/user-management")}
+            justifyContent="flex-start"
+            _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
+            _active={{ bg: activeBg }}
+            size="lg"
+            color={textColor}
+            transition="all 0.2s"
+          >
+            User Management
+          </Button>
         )}
       </VStack>
-      <Box mt="4">
-        <Button variant="ghost" leftIcon={<FiLogOut />} onClick={() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('role');
-          navigate("/login");
-        }}>Logout</Button>
+
+      <Box mt="auto" pt="6">
+        <Button
+          variant="ghost"
+          leftIcon={<FiLogOut />}
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            navigate("/login");
+          }}
+          justifyContent="flex-start"
+          _hover={{ bg: "red.50", color: "red.500", transform: "translateX(4px)" }}
+          size="lg"
+          transition="all 0.2s"
+        >
+          Logout
+        </Button>
       </Box>
     </Box>
   );
@@ -219,7 +502,7 @@ const AdminDashboardLayout = () => (
       <Routes>
         <Route index element={<DashboardHome />} />
         <Route path="dashboard" element={<DashboardHome />} />
-        <Route path="declinedtask" element={<DeclinedTasks />} /> // Declined Tasks page sahan changes
+        <Route path="declinedtask" element={<DeclinedTasks />} />
         <Route path="user-management" element={<UserManagement />} />
         <Route path="evaluation" element={<Evaluation />} />
         <Route

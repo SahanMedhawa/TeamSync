@@ -22,9 +22,16 @@ import {
   FormErrorMessage,
   Progress,
   HStack,
+  useColorModeValue,
+  Icon,
+  InputGroup,
+  InputLeftElement,
+  Image,
 } from "@chakra-ui/react";
 import axios from "axios";
 import Chat from '../components/Chat';
+import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiCalendar, FiUser, FiAlertCircle } from "react-icons/fi";
+import teamsImage from "../assets/teams.png";
 
 const Requests = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -51,6 +58,12 @@ const Requests = () => {
 
   // Retrieve companyID from localStorage
   const companyID = localStorage.getItem("companyID");
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "white");
+  const headingColor = useColorModeValue("blue.600", "blue.300");
+  const inputBg = useColorModeValue("gray.50", "gray.600");
 
   useEffect(() => {
     // Fetch users first, then fetch requests
@@ -256,112 +269,330 @@ const Requests = () => {
   };
 
   return (
-    <Box p="8">
-      <Heading mb="8">Your Requests</Heading>
-      <Flex>
-        <Box flex="1" mr="8" bg="gray.200" p="6" borderRadius="md" boxShadow="md" minH="80vh">
-          <Heading size="md" mb="3">Pending Requests</Heading>
-          <Button mb="4" colorScheme="blue" onClick={onOpen}>
-            + Make Request
+    <Box 
+      minH="100vh" 
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Image */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        zIndex="0"
+      >
+        <Image
+          src={teamsImage}
+          alt="Requests Background"
+          objectFit="cover"
+          width="100%"
+          height="100%"
+        />
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg={useColorModeValue("rgba(255, 255, 255, 0.7)", "rgba(17, 24, 39, 0.7)")}
+        />
+      </Box>
+
+      {/* Content Container */}
+      <Box p={5} position="relative" zIndex="1">
+        <Box mb={8}>
+          <Heading
+            color={headingColor}
+            fontWeight="bold"
+            letterSpacing="tight"
+            mb={4}
+          >
+            Requests
+          </Heading>
+          <Button
+            leftIcon={<Icon as={FiPlus} />}
+            size="md"
+            px={8}
+            py={6}
+            onClick={onOpen}
+            bgGradient="linear(to-r, teal.400, blue.500)"
+            color="white"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "0 0 20px rgba(49, 130, 206, 0.5)",
+              bgGradient: "linear(to-r, teal.500, blue.600)",
+              borderColor: "white",
+              _before: {
+                background: "linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)",
+              }
+            }}
+            _active={{
+              transform: "translateY(0)",
+              boxShadow: "md",
+            }}
+            transition="all 0.3s ease"
+            borderRadius="lg"
+            fontWeight="semibold"
+            letterSpacing="wide"
+            boxShadow="md"
+            border="2px solid"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)",
+              transition: "all 0.3s ease",
+            }}
+          >
+            Create Request
           </Button>
-          <VStack spacing="4">
-            {pendingRequests.map((request) => (
-              <Box key={request._id} p="4" boxShadow="md" borderRadius="md" bg="white" w="100%" border="1px" borderColor="gray.200">
-                <Flex justify="space-between">
-                  <Box>
-                    <Heading size="sm">{request.taskName}</Heading>
-                    <Text>{request.description}</Text>
-                    <Text>Priority: {request.priority}</Text>
-                    <Text>Deadline: {new Date(request.deadline).toLocaleDateString()}</Text>
-                    <Text>Assignee: {getAssigneeName(request.assignee)}</Text>
-                  </Box>
-                  <Box>
-                    <Button size="sm" colorScheme="gray" onClick={() => handleEditRequest(request._id)}>
-                      Edit
-                    </Button>
-                    <Button size="sm" ml="2" colorScheme="red" onClick={() => handleDeleteRequest(request._id)}>
-                      Delete
-                    </Button>
-                  </Box>
-                </Flex>
-              </Box>
-            ))}
-          </VStack>
         </Box>
-        <Box flex="1" bg="gray.200" p="6" borderRadius="md" boxShadow="md" minH="80vh">
-          <Heading size="md" mb="4">Resolved Requests</Heading>
-          <Input
-            placeholder="Search by request name"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            mb="4"
-            outline={"1px solid"}
-          />
-          <VStack spacing="4">
-            {filteredCompletedRequests.map((request) => (
-              <Box key={request._id} p="4" boxShadow="md" borderRadius="md" bg="white" w="100%" border="1px" borderColor="gray.200">
-                <Heading size="sm">{request.taskName}</Heading>
-                <Text>{request.description}</Text>
-                <Text>Priority: {request.priority}</Text>
-                <Text>Deadline: {new Date(request.deadline).toLocaleDateString()}</Text>
-                <Text>Assignee: {getAssigneeName(request.assignee)}</Text>
-              </Box>
-            ))}
-          </VStack>
-        </Box>
-      </Flex>
-      <Modal isOpen={isOpen} onClose={handleModalClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{isEditing ? "Edit Request" : "Create a New Request"}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <FormControl mb="4" isInvalid={errors.taskName}>
-              <FormLabel>Task Name</FormLabel>
-              <Input name="taskName" value={newRequest.taskName} onChange={handleInputChange} />
-              <FormErrorMessage>{errors.taskName}</FormErrorMessage>
-            </FormControl>
-            <FormControl mb="4" isInvalid={errors.description}>
-              <FormLabel>Description</FormLabel>
-              <Input name="description" value={newRequest.description} onChange={handleInputChange} />
-              <FormErrorMessage>{errors.description}</FormErrorMessage>
-            </FormControl>
-            <FormControl mb="4" isInvalid={errors.priority}>
-              <FormLabel>Priority</FormLabel>
-              <Select name="priority" value={newRequest.priority} onChange={handleInputChange}>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </Select>
-              <FormErrorMessage>{errors.priority}</FormErrorMessage>
-            </FormControl>
-            <FormControl mb="4" isInvalid={errors.deadline}>
-              <FormLabel>Deadline</FormLabel>
-              <Input type="date" name="deadline" value={newRequest.deadline} onChange={handleInputChange} min={new Date().toISOString().split('T')[0]} />
-              <FormErrorMessage>{errors.deadline}</FormErrorMessage>
-            </FormControl>
-            <FormControl mb="4" isInvalid={errors.assignee}>
-              <FormLabel>Assignee</FormLabel>
-              <Select name="assignee" value={newRequest.assignee} onChange={handleInputChange}>
-                {users.map((user) => (
-                  <option key={user.companyID} value={user.companyID}>
-                    {user.fullName}
-                  </option>
+
+        <Flex gap={6} mt={4}>
+          {/* Left Side - Pending Requests Section */}
+          <Box flex="1">
+            <Box 
+              bg={cardBg} 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="md" 
+              border="1px" 
+              borderColor={borderColor}
+              minH="calc(100vh - 250px)"
+            >
+              <Heading size="md" mb={4} color={headingColor}>Pending Requests</Heading>
+              <VStack spacing="4">
+                {pendingRequests.map(request => (
+                  <Box 
+                    key={request._id} 
+                    p="4" 
+                    boxShadow="md" 
+                    borderRadius="md" 
+                    bg={useColorModeValue("white", "gray.600")} 
+                    w="100%" 
+                    border="1px" 
+                    borderColor={borderColor}
+                    _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                    transition="all 0.2s"
+                  >
+                    <Flex justify="space-between">
+                      <Box>
+                        <Heading size="sm" color={textColor}>{request.taskName}</Heading>
+                        <Text color={textColor}>{request.description}</Text>
+                        <Text color={textColor}>Priority: {request.priority}</Text>
+                        <Text color={textColor}>Deadline: {new Date(request.deadline).toLocaleDateString()}</Text>
+                        <Text color={textColor}>Assignee: {getAssigneeName(request.assignee)}</Text>
+                      </Box>
+                      <HStack spacing={2}>
+                        <Button
+                          size="sm"
+                          colorScheme="green"
+                          leftIcon={<Icon as={FiEdit2} />}
+                          onClick={() => handleEditRequest(request._id)}
+                          _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+                          transition="all 0.2s"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          colorScheme="red"
+                          leftIcon={<Icon as={FiTrash2} />}
+                          onClick={() => handleDeleteRequest(request._id)}
+                          _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+                          transition="all 0.2s"
+                        >
+                          Delete
+                        </Button>
+                      </HStack>
+                    </Flex>
+                  </Box>
                 ))}
-              </Select>
-              <FormErrorMessage>{errors.assignee}</FormErrorMessage>
-            </FormControl>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" mr="3" onClick={isEditing ? handleUpdateRequest : handleCreateRequest}>
-              {isEditing ? "Update" : "Create"}
-            </Button>
-            <Button variant="ghost" onClick={handleModalClose}>
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              </VStack>
+            </Box>
+          </Box>
+
+          {/* Right Side - Completed Requests Section */}
+          <Box flex="1">
+            <Box 
+              bg={cardBg} 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="md" 
+              border="1px" 
+              borderColor={borderColor}
+              minH="calc(100vh - 250px)"
+            >
+              <Heading size="md" mb={4} color={headingColor}>Completed Requests</Heading>
+              <InputGroup mb={4}>
+                <InputLeftElement pointerEvents="none">
+                  <Icon as={FiSearch} color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Search completed requests..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  bg={inputBg}
+                  _hover={{ borderColor: "blue.400" }}
+                  _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                />
+              </InputGroup>
+              <VStack spacing="4">
+                {filteredCompletedRequests.map(request => (
+                  <Box 
+                    key={request._id} 
+                    p="4" 
+                    boxShadow="md" 
+                    borderRadius="md" 
+                    bg={useColorModeValue("white", "gray.600")} 
+                    w="100%" 
+                    border="1px" 
+                    borderColor={borderColor}
+                    _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                    transition="all 0.2s"
+                  >
+                    <Flex justify="space-between">
+                      <Box>
+                        <Heading size="sm" color={textColor}>{request.taskName}</Heading>
+                        <Text color={textColor}>{request.description}</Text>
+                        <Text color={textColor}>Priority: {request.priority}</Text>
+                        <Text color={textColor}>Completed On: {new Date(request.completedAt).toLocaleDateString()}</Text>
+                        <Text color={textColor}>Assignee: {getAssigneeName(request.assignee)}</Text>
+                      </Box>
+                    </Flex>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+          </Box>
+        </Flex>
+
+        <Modal isOpen={isOpen} onClose={handleModalClose} size="xl">
+          <ModalOverlay backdropFilter="blur(10px)" />
+          <ModalContent bg={cardBg}>
+            <ModalHeader color={headingColor}>
+              {isEditing ? "Edit Request" : "Create New Request"}
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <VStack spacing={4}>
+                <FormControl isInvalid={errors.taskName}>
+                  <FormLabel>Task Name</FormLabel>
+                  <Input
+                    name="taskName"
+                    value={newRequest.taskName}
+                    onChange={handleInputChange}
+                    bg={inputBg}
+                    _hover={{ borderColor: "blue.400" }}
+                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                  />
+                  <FormErrorMessage>{errors.taskName}</FormErrorMessage>
+                </FormControl>
+
+                <FormControl isInvalid={errors.description}>
+                  <FormLabel>Description</FormLabel>
+                  <Input
+                    name="description"
+                    value={newRequest.description}
+                    onChange={handleInputChange}
+                    bg={inputBg}
+                    _hover={{ borderColor: "blue.400" }}
+                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                  />
+                  <FormErrorMessage>{errors.description}</FormErrorMessage>
+                </FormControl>
+
+                <FormControl isInvalid={errors.priority}>
+                  <FormLabel>Priority</FormLabel>
+                  <Select
+                    name="priority"
+                    value={newRequest.priority}
+                    onChange={handleInputChange}
+                    bg={inputBg}
+                    _hover={{ borderColor: "blue.400" }}
+                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                  >
+                    <option value="">Select Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </Select>
+                  <FormErrorMessage>{errors.priority}</FormErrorMessage>
+                </FormControl>
+
+                <FormControl isInvalid={errors.deadline}>
+                  <FormLabel>Deadline</FormLabel>
+                  <Input
+                    type="date"
+                    name="deadline"
+                    value={newRequest.deadline}
+                    onChange={handleInputChange}
+                    bg={inputBg}
+                    _hover={{ borderColor: "blue.400" }}
+                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                  />
+                  <FormErrorMessage>{errors.deadline}</FormErrorMessage>
+                </FormControl>
+
+                <FormControl isInvalid={errors.assignee}>
+                  <FormLabel>Assignee</FormLabel>
+                  <Select
+                    name="assignee"
+                    value={newRequest.assignee}
+                    onChange={handleInputChange}
+                    bg={inputBg}
+                    _hover={{ borderColor: "blue.400" }}
+                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                  >
+                    <option value="">Select Assignee</option>
+                    {users.map((user) => (
+                      <option key={user._id} value={user.companyID}>
+                        {user.fullName}
+                      </option>
+                    ))}
+                  </Select>
+                  <FormErrorMessage>{errors.assignee}</FormErrorMessage>
+                </FormControl>
+              </VStack>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button variant="ghost" mr={3} onClick={handleModalClose}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="blue"
+                onClick={isEditing ? handleUpdateRequest : handleCreateRequest}
+                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                transition="all 0.2s"
+              >
+                {isEditing ? "Update" : "Create"}
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        {selectedAcceptedRequestForChat && (
+          <Modal isOpen={isAcceptedChatOpen} onClose={onAcceptedChatClose} size="xl">
+            <ModalOverlay backdropFilter="blur(10px)" />
+            <ModalContent bg={cardBg}>
+              <ModalHeader color={headingColor}>Chat with {getAssigneeName(selectedAcceptedRequestForChat.assignee)}</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <Chat requestId={selectedAcceptedRequestForChat._id} />
+              </ModalBody>
+            </ModalContent>
+          </Modal>
+        )}
+      </Box>
     </Box>
   );
 };
