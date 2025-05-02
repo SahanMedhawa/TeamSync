@@ -16,7 +16,7 @@ import {
   Avatar,
   HStack
 } from '@chakra-ui/react';
-import { FiHome, FiUsers, FiFileText, FiBell, FiTerminal, FiLogOut, FiActivity, FiSend, FiSettings } from 'react-icons/fi';
+import { FiHome, FiUsers, FiFileText, FiBell, FiTerminal, FiLogOut, FiActivity, FiSend, FiSettings,FiXOctagon } from 'react-icons/fi';
 import axios from 'axios';
 import UserManagement from './UserManagement';
 import Evaluation from './Evaluation';
@@ -181,9 +181,15 @@ const DashboardHome = () => {
               </Text>
             </Box>
           </HStack>
+<<<<<<< HEAD
 
           {/* NotificationBell aligned to the top-right */}
           <NotificationBell companyID={companyID} />
+=======
+          <HStack spacing="4">
+          <NotificationBell companyID={companyID} />
+          </HStack>
+>>>>>>> origin/main
         </Flex>
 
         <Grid templateColumns="repeat(3, 1fr)" gap={6} mb="8">
@@ -361,7 +367,7 @@ const DashboardHome = () => {
               />
               <HStack spacing="4" mb="4" position="relative">
                 <Icon as={FiBell} boxSize="6" color="purple.500" />
-                <Heading size="md" color={textColor}>Notifications</Heading>
+                <Heading size="md" color={textColor}>Evaluation Reminders</Heading>
               </HStack>
               <VStack align="stretch" spacing="4">
                 {notifications.map((notification, index) => (
@@ -414,7 +420,11 @@ const AdminSidebar = () => {
         <Heading size="lg" fontSize="2xl" bgGradient="linear(to-r, blue.400, blue.600)" bgClip="text">
           TeamSync Admin
         </Heading>
+<<<<<<< HEAD
 
+=======
+       
+>>>>>>> origin/main
       </Flex>
 
       <VStack align="stretch" spacing="2">
@@ -446,7 +456,7 @@ const AdminSidebar = () => {
         </Button>
         <Button
           variant="ghost"
-          leftIcon={<FiSend />}
+          leftIcon={<FiXOctagon />}
           onClick={() => navigate("/admindashboard/declinedtask")}
           justifyContent="flex-start"
           _hover={{ bg: hoverBg, color: activeTextColor, transform: "translateX(4px)" }}
