@@ -538,6 +538,7 @@ const Requests = () => {
                     bg={inputBg}
                     _hover={{ borderColor: "blue.400" }}
                     _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                    min={new Date().toISOString().split('T')[0]} // Prevent past dates
                   />
                   <FormErrorMessage>{errors.deadline}</FormErrorMessage>
                 </FormControl>
