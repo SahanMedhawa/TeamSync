@@ -69,6 +69,10 @@ app.get('/', (req, res) => {
   res.send('Server running successfully!');
 });
 
+//Add support route
+const supportRouter = require('./routes/support');
+app.use('/support', supportRouter);
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   //console.log('User connected:', socket.id);   //Uncomment for Socket.io debugging ++Sahan
