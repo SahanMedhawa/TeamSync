@@ -380,7 +380,7 @@ const Requests = () => {
             letterSpacing="tight"
             mb={4}
           >
-            Requests
+            Request a Task
           </Heading>
           <Button
             leftIcon={<Icon as={FiPlus} />}
@@ -388,6 +388,7 @@ const Requests = () => {
             px={8}
             py={6}
             onClick={onOpen}
+            mt={6}
             bgGradient="linear(to-r, teal.400, blue.500)"
             color="white"
             _hover={{
@@ -428,13 +429,13 @@ const Requests = () => {
 
         </Box>
 
-                <Flex justify="space-between" align="center" mb="8">
+                <Flex justify="flex-end" align="center" mb={2}>
                     <Button colorScheme="blue" onClick={handleExportPDF}>
                       Export PDF
                     </Button> 
                 </Flex>
 
-        <Flex gap={6} mt={4}>
+        <Flex gap={6} mt={2}>
           {/* Left Side - Pending Requests Section */}
           <Box flex="1">
             <Box 
