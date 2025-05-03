@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import bgImage from "../assets/team.jpg";
+import SupportChat from "../components/SupportChat";
 
 
 const Login = () => {
@@ -259,8 +260,10 @@ const Login = () => {
             </VStack>
           </Box>
         </Flex>
+        <SupportChat /> 
       </Container>
     </Box>
+    
   );
 };
 
